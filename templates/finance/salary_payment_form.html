@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'finance:salary_payment_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Salary Payments
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Salary Payment Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" id="salaryPaymentForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Teacher Selection -->
+                        <div class="form-group">
+                            <label for="teacher">Select Teacher <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <select name="teacher" id="teacher" class="form-control" required {% if selected_teacher %}disabled{% endif %}>
+                                    <option value="">-- Select Teacher --</option>
+                                    {% for teacher in teachers %}
+                                        <option value="{{ teacher.id }}" {% if selected_teacher and selected_teacher.id == teacher.id %}selected{% endif %}>
+                                            {{ teacher.get_full_name }} ({{ teacher.email }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if selected_teacher %}
+                                <input type="hidden" name="teacher" value="{{ selected_teacher.id }}">
+                                {% endif %}
+                            </div>
+                            <small class="form-text text-muted">Select the teacher for whom you want to record a salary payment</small>
+                        </div>
+                        
+                        <!-- Month and Year Selection -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="month">Month <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                        </div>
+                                        <select name="month" id="month" class="form-control" required>
+                                            <option value="">-- Select Month --</option>
+                                            {% for month_num, month_name in months %}
+                                                <option value="{{ month_num }}" {% if month_num == current_month %}selected{% endif %}>
+                                                    {{ month_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="year">Year <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                        </div>
+                                        <select name="year" id="year" class="form-control" required>
+                                            <option value="">-- Select Year --</option>
+                                            {% for year_val in years %}
+                                                <option value="{{ year_val }}" {% if year_val == current_year %}selected{% endif %}>
+                                                    {{ year_val }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Details -->
+                        <div class="form-group">
+                            <label for="payment_date">Payment Date <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                </div>
+                                <input type="date" name="payment_date" id="payment_date" class="form-control" value="{{ current_date }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-money-check-alt"></i></span>
+                                </div>
+                                <select name="payment_method" id="payment_method" class="form-control" required>
+                                    <option value="">-- Select Payment Method --</option>
+                                    {% for value, text in payment_methods %}
+                                        <option value="{{ value }}">{{ text }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="transaction_id">Transaction ID/Reference</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                </div>
+                                <input type="text" name="transaction_id" id="transaction_id" class="form-control" placeholder="Transaction reference number">
+                            </div>
+                            <small class="form-text text-muted">Optional reference number for bank transfers, cheques, etc.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea name="remarks" id="remarks" class="form-control" rows="3" placeholder="Any additional notes"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="is_paid" name="is_paid" checked>
+                                <label class="custom-control-label" for="is_paid">Mark as Paid</label>
+                            </div>
+                            <small class="form-text text-muted">Uncheck if this is a pending payment record</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Salary Details Preview -->
+                        <div class="card border-left-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="m-0 font-weight-bold">Salary Details</h6>
+                            </div>
+                            <div class="card-body" id="salaryDetails">
+                                {% if selected_structure %}
+                                    <div class="text-center mb-4">
+                                        {% if selected_teacher.profile_pic %}
+                                            <img src="{{ selected_teacher.profile_pic.url }}" alt="Profile" class="img-profile rounded-circle mb-3" style="width: 100px; height: 100px;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary text-white mb-3 d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px; font-size: 36px;">
+                                                {{ selected_teacher.first_name|first }}{{ selected_teacher.last_name|first }}
+                                            </div>
+                                        {% endif %}
+                                        <h5>{{ selected_teacher.get_full_name }}</h5>
+                                        <p class="text-muted">{{ selected_teacher.email }}</p>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <tr>
+                                                <td><strong>Basic Salary:</strong></td>
+                                                <td class="text-right">{{ selected_structure.basic_salary }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Allowances:</strong></td>
+                                                <td class="text-right">+ {{ selected_structure.allowances }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Deductions:</strong></td>
+                                                <td class="text-right">- {{ selected_structure.deductions }}</td>
+                                            </tr>
+                                            <tr class="bg-light">
+                                                <td><strong>Net Salary:</strong></td>
+                                                <td class="text-right text-primary font-weight-bold">{{ selected_structure.net_salary }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Effective Date:</strong></td>
+                                                <td class="text-right">{{ selected_structure.effective_date }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <div class="mb-3">
+                                            <i class="fas fa-user-tie fa-4x text-gray-300"></i>
+                                        </div>
+                                        <h5 class="text-gray-500">Select a teacher to view salary details</h5>
+                                        <p class="text-muted small">Make sure the teacher has a defined salary structure</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h6 class="font-weight-bold"><i class="fas fa-info-circle mr-2"></i> Information</h6>
+                            <p class="mb-0">Salary payments are recorded based on the teacher's defined salary structure. If a teacher doesn't have a salary structure, you will need to define one first.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save mr-2"></i> Record Salary Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Handle teacher selection change
+        $('#teacher').change(function() {
+            var teacherId = $(this).val();
+            if (teacherId) {
+                window.location.href = "{% url 'finance:add_salary_payment' %}?teacher=" + teacherId;
+            } else {
+                $('#salaryDetails').html(`
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-user-tie fa-4x text-gray-300"></i>
+                        </div>
+                        <h5 class="text-gray-500">Select a teacher to view salary details</h5>
+                        <p class="text-muted small">Make sure the teacher has a defined salary structure</p>
+                    </div>
+                `);
+            }
+        });
+        
+        // Form validation
+        $('#salaryPaymentForm').on('submit', function(e) {
+            var isValid = true;
+            
+            if (!$('#teacher').val()) {
+                alert('Please select a teacher');
+                isValid = false;
+            }
+            
+            if (!$('#month').val()) {
+                alert('Please select a month');
+                isValid = false;
+            }
+            
+            if (!$('#year').val()) {
+                alert('Please select a year');
+                isValid = false;
+            }
+            
+            if (!$('#payment_date').val()) {
+                alert('Please select a payment date');
+                isValid = false;
+            }
+            
+            if (!$('#payment_method').val()) {
+                alert('Please select a payment method');
+                isValid = false;
+            }
+            
+            {% if not selected_structure %}
+            alert('The selected teacher does not have a defined salary structure. Please define one first.');
+            isValid = false;
+            {% endif %}
+            
+            return isValid;
+        });
+    });
+</script>
+{% endblock %} 

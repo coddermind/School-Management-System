@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Student{% else %}Add Student{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Edit Student{% else %}Add Student{% endif %}</h1>
+        <a href="{% url 'academics:student_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Students
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.user.id_for_label }}">User Account</label>
+                        {{ form.user }}
+                        {% if form.user.errors %}
+                            <div class="text-danger">{{ form.user.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Only showing student users that don't already have a student record.</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.academic_session.id_for_label }}">Academic Session</label>
+                        {{ form.academic_session }}
+                        {% if form.academic_session.errors %}
+                            <div class="text-danger">{{ form.academic_session.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.grade.id_for_label }}">Class/Grade</label>
+                        {{ form.grade }}
+                        {% if form.grade.errors %}
+                            <div class="text-danger">{{ form.grade.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a grade to see available sections.</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.section.id_for_label }}">Section</label>
+                        {{ form.section }}
+                        {% if form.section.errors %}
+                            <div class="text-danger">{{ form.section.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.roll_number.id_for_label }}">Roll Number</label>
+                        {{ form.roll_number }}
+                        {% if form.roll_number.errors %}
+                            <div class="text-danger">{{ form.roll_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.monthly_fee.id_for_label }}">Monthly Fee (Rs.)</label>
+                        {{ form.monthly_fee }}
+                        {% if form.monthly_fee.errors %}
+                            <div class="text-danger">{{ form.monthly_fee.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Default: Rs. 5000. The monthly fee will be charged from 1st of every month.</small>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Note: Each student must have a unique roll number within their class, section, and academic session.
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {% if form.instance.pk %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'academics:student_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Add select2 to dropdowns for better user experience
+        $('select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Select an option'
+        });
+        
+        // When grade changes, update section options
+        $('#{{ form.grade.id_for_label }}').change(function() {
+            var gradeId = $(this).val();
+            if (gradeId) {
+                // Clear current section selection
+                $('#{{ form.section.id_for_label }}').empty().trigger('change');
+                
+                // Show loading indicator
+                $('#{{ form.section.id_for_label }}').append('<option value="">Loading sections...</option>').trigger('change');
+                
+                // Fetch sections for the selected grade using AJAX
+                $.ajax({
+                    url: '/academics/api/grade/' + gradeId + '/sections/',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#{{ form.section.id_for_label }}').empty();
+                        $('#{{ form.section.id_for_label }}').append('<option value="">Select a section</option>');
+                        
+                        // Add the sections from the response
+                        $.each(data.sections, function(index, section) {
+                            $('#{{ form.section.id_for_label }}').append(
+                                $('<option></option>').val(section.id).html(section.name)
+                            );
+                        });
+                        
+                        // Trigger the change event to update Select2
+                        $('#{{ form.section.id_for_label }}').trigger('change');
+                    },
+                    error: function() {
+                        // On error, show error message
+                        $('#{{ form.section.id_for_label }}').empty();
+                        $('#{{ form.section.id_for_label }}').append('<option value="">Error loading sections</option>');
+                        $('#{{ form.section.id_for_label }}').trigger('change');
+                    }
+                });
+            } else {
+                // If no grade selected, clear section dropdown
+                $('#{{ form.section.id_for_label }}').empty();
+                $('#{{ form.section.id_for_label }}').append('<option value="">Select grade first</option>');
+                $('#{{ form.section.id_for_label }}').trigger('change');
+            }
+        });
+    });
+</script>
+{% endblock %} 

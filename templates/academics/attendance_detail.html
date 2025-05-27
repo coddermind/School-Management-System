@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Details - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Attendance Details</h1>
+        <div>
+            <a href="{% url 'academics:attendance_list' %}" class="btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Attendance List
+            </a>
+            <a href="{% url 'academics:edit_attendance' attendance.id %}" class="btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Edit Attendance
+            </a>
+        </div>
+    </div>
+
+    <!-- Attendance Detail Card -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Attendance Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <tr>
+                                <th width="30%">Student</th>
+                                <td>
+                                    <a href="{% url 'academics:student_detail' attendance.student.id %}">
+                                        {{ attendance.student.user.get_full_name }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    {% if attendance.is_present %}
+                                    <span class="badge badge-success">Present</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Absent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Class</th>
+                                <td>{{ attendance.student.grade.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Subject</th>
+                                <td>{{ attendance.subject.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date</th>
+                                <td>{{ attendance.date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Marked By</th>
+                                <td>
+                                    {% if attendance.marked_by %}
+                                    {{ attendance.marked_by.get_full_name }}
+                                    {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Marked At</th>
+                                <td>{{ attendance.created_at }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated</th>
+                                <td>{{ attendance.updated_at }}</td>
+                            </tr>
+                            {% if attendance.note %}
+                            <tr>
+                                <th>Note</th>
+                                <td>{{ attendance.note }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Student Information Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if attendance.student.user.profile_picture %}
+                        <img class="img-profile rounded-circle" src="{{ attendance.student.user.profile_picture.url }}" width="100" height="100">
+                        {% else %}
+                        <img class="img-profile rounded-circle" src="/static/img/undraw_profile.svg" width="100" height="100">
+                        {% endif %}
+                    </div>
+                    <div class="text-center mb-3">
+                        <h5>{{ attendance.student.user.get_full_name }}</h5>
+                        <p>Student ID: {{ attendance.student.student_id }}</p>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Class:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance.student.grade.name }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Section:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance.student.section }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Email:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance.student.user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-center mt-3">
+                            <a href="{% url 'academics:student_detail' attendance.student.id %}" class="btn btn-sm btn-info">
+                                View Student Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Statistics Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Attendance Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3 text-center">Overall Attendance</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Present Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.present_count }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Absent Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.absent_count }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Total Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.total_count }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Attendance %:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.attendance_percentage }}%</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 mb-4">
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ attendance_stats.attendance_percentage }}%" 
+                                 aria-valuenow="{{ attendance_stats.attendance_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ attendance_stats.attendance_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3 text-center">{{ attendance.subject.name }} Attendance</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Present Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.subject_present }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Absent Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.subject_absent }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Total Days:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.subject_total }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p><strong>Attendance %:</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p>{{ attendance_stats.subject_percentage }}%</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" 
+                                 style="width: {{ attendance_stats.subject_percentage }}%" 
+                                 aria-valuenow="{{ attendance_stats.subject_percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ attendance_stats.subject_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

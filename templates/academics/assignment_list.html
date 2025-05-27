@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Assignments</h1>
+        {% if user.is_teacher %}
+        <a href="{% url 'academics:add_assignment' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Assignment
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Options</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="mb-0">
+                <div class="row">
+                    {% if user.is_teacher %}
+                    <div class="col-md-3 mb-2">
+                        <label for="grade" class="form-label">Class/Grade</label>
+                        <select name="grade" id="grade" class="form-control">
+                            <option value="">All Grades</option>
+                            {% for grade in grades %}
+                                <option value="{{ grade.id }}" {% if selected_grade == grade.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ grade.display_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-3 mb-2">
+                        <label for="subject" class="form-label">Subject</label>
+                        <select name="subject" id="subject" class="form-control">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="submitted" {% if selected_status == 'submitted' %}selected{% endif %}>Submitted</option>
+                            <option value="graded" {% if selected_status == 'graded' %}selected{% endif %}>Graded</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button type="submit" class="btn btn-primary mt-4">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assignments List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Assignments</h6>
+        </div>
+        <div class="card-body">
+            {% if assignments %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            {% if user.is_teacher %}
+                            <th>Class/Grade</th>
+                            <th>Section</th>
+                            {% endif %}
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.subject.name }}</td>
+                            {% if user.is_teacher %}
+                            <td>{{ assignment.grade.display_name }}</td>
+                            <td>{{ assignment.section.name|default:"All Sections" }}</td>
+                            {% endif %}
+                            <td>{{ assignment.due_date|date:"F d, Y" }}</td>
+                            <td>
+                                {% if user.is_student %}
+                                    {% with submission=assignment.submissions.first %}
+                                        {% if submission %}
+                                            {% if submission.status == 'graded' %}
+                                                <span class="badge badge-success">Graded: {{ submission.grade }}/{{ assignment.max_score }}</span>
+                                            {% elif submission.status == 'submitted' %}
+                                                <span class="badge badge-info">Submitted (Pending)</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="badge badge-{{ assignment.status_color }}">{{ assignment.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'academics:assignment_detail' assignment.id %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if user.is_student and not assignment.submissions.first or assignment.submissions.first.status != 'graded' %}
+                                <a href="{% url 'academics:submit_assignment' assignment.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-upload"></i> Submit
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No assignments found matching your criteria.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize select2 for dropdowns
+        $('#grade, #subject, #status').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+        
+        // Initialize DataTable
+        $('#dataTable').DataTable({
+            "paging": true,
+            "searching": true,
+            "order": [[5, "desc"]], // Sort by due date column descending
+            "language": {
+                "emptyTable": "No assignments found"
+            }
+        });
+    });
+</script>
+{% endblock %} 

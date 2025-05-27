@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Teacher Dashboard</h1>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ user.get_full_name|default:user.email }}!</h5>
+                    <p class="card-text">This is your teacher dashboard. From here, you can manage your classes, attendance, assignments, and more.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-blue">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_classes }}</h3>
+                        <p class="mb-0">My Classes</p>
+                    </div>
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-green">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_subjects }}</h3>
+                        <p class="mb-0">My Subjects</p>
+                    </div>
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-orange">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_assignments }}</h3>
+                        <p class="mb-0">Assignments</p>
+                    </div>
+                    <i class="fas fa-tasks"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-red">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_messages }}</h3>
+                        <p class="mb-0">Messages</p>
+                    </div>
+                    <i class="fas fa-envelope"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>My Class Subjects</span>
+                    <a href="{% url 'academics:timetable_list' %}" class="btn btn-sm btn-primary">View Timetable</a>
+                </div>
+                <div class="card-body">
+                    {% if subjects_data %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Class/Grade</th>
+                                    <th>Section</th>
+                                    <th>Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subjects_data %}
+                                <tr>
+                                    <td>{{ subject.grade }}</td>
+                                    <td>{{ subject.section }}</td>
+                                    <td>{{ subject.subject }} ({{ subject.subject_code }})</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No classes assigned yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Assignments</span>
+                    <a href="{% url 'academics:assignment_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No assignments created yet.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Announcements</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No announcements yet.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Upcoming Exams</span>
+                    <a href="{% url 'academics:exam_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No upcoming exams.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Student Report Card</h1>
+        <div>
+            <a href="{% url 'academics:student_detail' report_data.student.id %}" class="btn btn-secondary btn-sm mr-2">
+                <i class="fas fa-arrow-left"></i> Back to Student
+            </a>
+            <button onclick="window.print();" class="btn btn-primary btn-sm">
+                <i class="fas fa-print"></i> Print Report Card
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Card Header -->
+    <div class="card shadow mb-4 report-card-header">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="school-info">
+                    <h1 class="h3 font-weight-bold">School Management System</h1>
+                    <p class="mb-0">123 Education Street, Academic City</p>
+                    <p class="mb-0">Phone: (123) 456-7890 | Email: info@schoolmanagementsystem.com</p>
+                </div>
+                <div class="logo">
+                    <i class="fas fa-graduation-cap fa-4x text-primary"></i>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <h2 class="h4 font-weight-bold">STUDENT REPORT CARD</h2>
+                <p>Academic Session: {{ academic_year.name }} | Issue Date: {{ today|date:"F d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Information -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 font-weight-bold">Student Name:</div>
+                        <div class="col-md-8">{{ report_data.student.user.get_full_name }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4 font-weight-bold">Roll Number:</div>
+                        <div class="col-md-8">{{ report_data.student.roll_number }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4 font-weight-bold">Class/Grade:</div>
+                        <div class="col-md-8">{{ report_data.student.grade.name }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4 font-weight-bold">Section:</div>
+                        <div class="col-md-8">{{ report_data.student.section.name }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4 font-weight-bold">Academic Year:</div>
+                        <div class="col-md-8">{{ report_data.student.academic_session.name }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Performance -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Overall Performance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Final Grade</div>
+                            <div class="h1 mb-3 font-weight-bold text-center 
+                                        {% if report_data.final_result.grade == 'A+' or report_data.final_result.grade == 'A' %}text-success
+                                        {% elif report_data.final_result.grade == 'F' %}text-danger
+                                        {% else %}text-warning{% endif %}">
+                                {{ report_data.final_result.grade }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Final Percentage</div>
+                            <div class="h3 mb-3 font-weight-bold text-center">
+                                {{ report_data.final_result.percentage }}%
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar 
+                                            {% if report_data.final_result.percentage >= 60 %}bg-success
+                                            {% elif report_data.final_result.percentage >= 40 %}bg-warning
+                                            {% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ report_data.final_result.percentage }}%" 
+                                     aria-valuenow="{{ report_data.final_result.percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Total Marks Obtained</div>
+                            <div class="h5 mb-2 font-weight-bold">{{ report_data.final_result.total_marks }}/{{ report_data.final_result.max_possible }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Attendance</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ report_data.attendance.percentage }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Results -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Results</h6>
+        </div>
+        <div class="card-body">
+            {% if report_data.exams %}
+                {% for exam_result in report_data.exams %}
+                <div class="exam-section mb-4">
+                    <h5 class="font-weight-bold">{{ exam_result.exam.name }}</h5>
+                    <p class="small text-muted">{{ exam_result.exam.start_date|date:"M d, Y" }} - {{ exam_result.exam.end_date|date:"M d, Y" }}</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Marks Obtained</th>
+                                    <th>Maximum Marks</th>
+                                    <th>Percentage</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mark in exam_result.marks %}
+                                <tr>
+                                    <td>{{ mark.subject.name }}</td>
+                                    <td>{{ mark.marks_obtained }}</td>
+                                    <td>{{ mark.maximum_marks }}</td>
+                                    <td>{{ mark.percentage }}%</td>
+                                    <td>
+                                        {% if mark.percentage >= 90 %}A+
+                                        {% elif mark.percentage >= 80 %}A
+                                        {% elif mark.percentage >= 70 %}B+
+                                        {% elif mark.percentage >= 60 %}B
+                                        {% elif mark.percentage >= 50 %}C
+                                        {% elif mark.percentage >= 40 %}D
+                                        {% else %}F{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="font-weight-bold">
+                                <tr>
+                                    <td>Total</td>
+                                    <td>{{ exam_result.total_marks }}</td>
+                                    <td>{{ exam_result.max_possible }}</td>
+                                    <td>{{ exam_result.percentage }}%</td>
+                                    <td>{{ exam_result.grade }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">No exam results available for this student.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Attendance Report -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Attendance Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="attendance-stats">
+                                <div class="stat-item mb-3">
+                                    <div class="small font-weight-bold text-uppercase mb-1">Total School Days</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ report_data.attendance.total_days }}</div>
+                                </div>
+                                <div class="stat-item mb-3">
+                                    <div class="small font-weight-bold text-uppercase mb-1">Days Present</div>
+                                    <div class="h5 mb-0 font-weight-bold text-success">{{ report_data.attendance.present_days }}</div>
+                                </div>
+                                <div class="stat-item mb-3">
+                                    <div class="small font-weight-bold text-uppercase mb-1">Days Absent</div>
+                                    <div class="h5 mb-0 font-weight-bold text-danger">{{ report_data.attendance.absent_days }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="attendance-chart text-center">
+                                <div class="small font-weight-bold text-uppercase mb-1">Attendance Rate</div>
+                                <div class="h3 mb-0 font-weight-bold 
+                                            {% if report_data.attendance.percentage >= 75 %}text-success
+                                            {% elif report_data.attendance.percentage >= 60 %}text-warning
+                                            {% else %}text-danger{% endif %}">
+                                    {{ report_data.attendance.percentage }}%
+                                </div>
+                                
+                                <div class="attendance-chart-visual mt-3">
+                                    <div class="progress progress-lg">
+                                        <div class="progress-bar 
+                                                {% if report_data.attendance.percentage >= 75 %}bg-success
+                                                {% elif report_data.attendance.percentage >= 60 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ report_data.attendance.percentage }}%" 
+                                             aria-valuenow="{{ report_data.attendance.percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ report_data.attendance.percentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Subject-wise Attendance</h6>
+                </div>
+                <div class="card-body">
+                    {% if report_data.attendance.by_subject %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Present</th>
+                                        <th>Absent</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject_id, subject_data in report_data.attendance.by_subject.items %}
+                                    <tr>
+                                        <td>{{ subject_data.subject.name }}</td>
+                                        <td>{{ subject_data.present }}</td>
+                                        <td>{{ subject_data.absent }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar 
+                                                        {% if subject_data.percentage >= 75 %}bg-success
+                                                        {% elif subject_data.percentage >= 60 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ subject_data.percentage }}%" 
+                                                     aria-valuenow="{{ subject_data.percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ subject_data.percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No subject-wise attendance data available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teachers' Remarks -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Final Assessment</h6>
+        </div>
+        <div class="card-body">
+            <div class="remarks-section">
+                <h5 class="font-weight-bold">Overall Remarks</h5>
+                <p>{{ report_data.final_result.remarks }}</p>
+                
+                {% if report_data.teacher_remarks %}
+                    <h5 class="font-weight-bold mt-4">Teachers' Comments</h5>
+                    <div class="teacher-comments">
+                        {% for remark in report_data.teacher_remarks %}
+                            <div class="comment-item mb-3 p-3 border rounded">
+                                <p class="mb-1">{{ remark.comment }}</p>
+                                <div class="small text-muted">
+                                    - {{ remark.teacher }}, {{ remark.subject }} Teacher
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="signature-section mt-5">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="signature-line mb-2"></div>
+                        <div class="font-weight-bold">Class Teacher</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="signature-line mb-2"></div>
+                        <div class="font-weight-bold">Principal</div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="signature-line mb-2"></div>
+                        <div class="font-weight-bold">Parent/Guardian</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .navbar, .sidebar, .topbar, .card-header, .btn, .footer {
+            display: none !important;
+        }
+        
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .report-card-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 80%;
+            margin: 0 auto;
+        }
+    }
+    
+    .signature-line {
+        border-top: 1px solid #000;
+        width: 80%;
+        margin: 0 auto;
+    }
+    
+    .progress-lg {
+        height: 20px;
+    }
+</style>
+{% endblock %} 

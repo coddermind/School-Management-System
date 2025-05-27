@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Student Dashboard</h1>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ user.get_full_name|default:user.email }}!</h5>
+                    <p class="card-text">This is your student dashboard. From here, you can view your timetable, assignments, attendance, and more.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Information Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">My Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Grade:</strong> {{ student.grade.display_name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Section:</strong> Section {{ student.section.name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <p><strong>Enrolled Subjects ({{ subjects|length }}):</strong></p>
+                            <ul class="list-group">
+                                {% for subject in subjects %}
+                                    <li class="list-group-item">{{ subject.name }} ({{ subject.code }})</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-blue">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ subjects|length }}</h3>
+                        <p class="mb-0">Subjects</p>
+                    </div>
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-green">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ attendance_percentage }}%</h3>
+                        <p class="mb-0">Attendance</p>
+                    </div>
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-orange">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ pending_assignments_count }}</h3>
+                        <p class="mb-0">Pending Assignments</p>
+                    </div>
+                    <i class="fas fa-tasks"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-red">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ unread_messages_count }}</h3>
+                        <p class="mb-0">Unread Messages</p>
+                    </div>
+                    <i class="fas fa-envelope"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Today's Classes</span>
+                    <a href="{% url 'academics:timetable_list' %}" class="btn btn-sm btn-primary">View Full Timetable</a>
+                </div>
+                <div class="card-body">
+                    {% if today_classes %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Subject</th>
+                                        <th>Teacher</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for class in today_classes %}
+                                    <tr>
+                                        <td>{{ class.time_slot.start_time|time:"H:i" }} - {{ class.time_slot.end_time|time:"H:i" }}</td>
+                                        <td>{{ class.subject.name }}</td>
+                                        <td>{{ class.teacher.get_full_name }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No classes scheduled for today.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Pending Assignments</span>
+                    <a href="{% url 'academics:assignment_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if pending_assignments %}
+                        <div class="list-group">
+                            {% for assignment in pending_assignments %}
+                            <a href="{% url 'academics:assignment_detail' assignment.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ assignment.title }}</h6>
+                                    <small>Due: {{ assignment.due_date|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1">{{ assignment.subject.name }}</p>
+                                <small>
+                                    {% if assignment.due_date < now.date %}
+                                    <span class="badge badge-danger">Overdue</span>
+                                    {% elif assignment.due_date == now.date %}
+                                    <span class="badge badge-warning">Due Today</span>
+                                    {% else %}
+                                    <span class="badge badge-info">Upcoming</span>
+                                    {% endif %}
+                                </small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No pending assignments.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Announcements</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No announcements yet.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Upcoming Exams</span>
+                    <a href="{% url 'academics:exam_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_exams %}
+                        <div class="list-group">
+                            {% for exam in upcoming_exams %}
+                            <a href="{% url 'academics:exam_detail' exam.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ exam.name }}</h6>
+                                    <small>{{ exam.start_date|date:"M d" }} - {{ exam.end_date|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1">{{ exam.exam_type.name }}</p>
+                                <small>
+                                    {% if exam.start_date <= now.date and exam.end_date >= now.date %}
+                                    <span class="badge badge-warning">Ongoing</span>
+                                    {% else %}
+                                    <span class="badge badge-info">Upcoming</span>
+                                    {% endif %}
+                                </small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No upcoming exams.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Fee Status</span>
+                    <a href="{% url 'finance:student_fee_payments' student.id %}" class="btn btn-sm btn-primary">View Details</a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted text-center">No fee records found.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

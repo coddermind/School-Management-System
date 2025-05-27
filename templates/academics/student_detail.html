@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Details - {{ student.user.get_full_name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Student Details</h1>
+        <div>
+            <a href="{% url 'academics:student_report_card' student.id %}" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+                <i class="fas fa-file-alt fa-sm text-white-50"></i> View Report Card
+            </a>
+            <a href="{% url 'academics:edit_student' student.id %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm ml-2">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Edit Student
+            </a>
+            <a href="{% url 'academics:student_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-2">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Students
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Student Profile Card -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if student.user.profile_pic %}
+                            <img class="img-profile rounded-circle mb-3" src="{{ student.user.profile_pic.url }}" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <img class="img-profile rounded-circle mb-3" src="/static/img/undraw_profile.svg" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% endif %}
+                        <h4>{{ student.user.get_full_name }}</h4>
+                        <p class="text-muted">Student</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Email:</div>
+                        <div class="col-7">{{ student.user.email }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Phone:</div>
+                        <div class="col-7">{{ student.user.phone_number|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Address:</div>
+                        <div class="col-7">{{ student.user.address|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Date of Birth:</div>
+                        <div class="col-7">{{ student.user.date_of_birth|date:"F j, Y"|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Admission Number:</div>
+                        <div class="col-7">{{ admission_number|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Blood Group:</div>
+                        <div class="col-7">{{ blood_group|default:"Not provided" }}</div>
+                    </div>
+                    
+                    <hr>
+                    <h6 class="font-weight-bold">Parent Information</h6>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Parent Name:</div>
+                        <div class="col-7">{{ parent_name|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Parent Phone:</div>
+                        <div class="col-7">{{ parent_phone|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Parent Email:</div>
+                        <div class="col-7">{{ parent_email|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Academic Information -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Academic Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Class/Grade</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student.grade.display_name }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Section</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student.section.name }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Roll Number</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student.roll_number }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-id-card fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Academic Session</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student.academic_session.name }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-left-danger shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Monthly Fee</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{ student.monthly_fee }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-money-bill fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Payment Status</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                {% if pending_fees %}
+                                                    <span class="text-danger">Rs. {{ pending_fees }} pending</span>
+                                                {% else %}
+                                                    <span class="text-success">All Fees Paid</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fee Details -->
+                    <div class="mt-4">
+                        <h4 class="mb-3">Fee Details</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary active fee-filter" data-filter="all">All</button>
+                                    <button type="button" class="btn btn-sm btn-outline-success fee-filter" data-filter="paid">Paid</button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning fee-filter" data-filter="partial">Partially Paid</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger fee-filter" data-filter="pending">Pending</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Fee Name</th>
+                                                <th>Amount (Rs.)</th>
+                                                <th>Status</th>
+                                                <th>Paid Amount (Rs.)</th>
+                                                <th>Due Amount (Rs.)</th>
+                                                <th>Payment Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if fee_payments %}
+                                                {% for payment in fee_payments %}
+                                                {% with due_amount=payment.fee_structure.amount|subtract:payment.amount_paid %}
+                                                <tr class="fee-row 
+                                                    {% if payment.amount_paid >= payment.fee_structure.amount %}paid-fee
+                                                    {% elif payment.amount_paid > 0 %}partial-fee
+                                                    {% else %}pending-fee{% endif %}">
+                                                    <td>{{ payment.fee_structure.name }}</td>
+                                                    <td>{{ payment.fee_structure.amount }}</td>
+                                                    <td>
+                                                        {% if payment.amount_paid >= payment.fee_structure.amount %}
+                                                            <span class="badge badge-success">Paid</span>
+                                                        {% elif payment.amount_paid > 0 %}
+                                                            <span class="badge badge-warning">Partially Paid</span>
+                                                        {% else %}
+                                                            <span class="badge badge-danger">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ payment.amount_paid }}</td>
+                                                    <td>{{ due_amount }}</td>
+                                                    <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                                    <td>
+                                                        {% if due_amount > 0 %}
+                                                            <a href="{% url 'finance:edit_fee_payment' payment.id %}" class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-money-bill-wave"></i> Pay
+                                                            </a>
+                                                        {% endif %}
+                                                        <a href="{% url 'finance:fee_payment_receipt' payment.id %}" class="btn btn-sm btn-info">
+                                                            <i class="fas fa-file-invoice"></i> Receipt
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endwith %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="7" class="text-center">No fee records found for this student.</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg-light">
+                                                <th colspan="3" class="text-right">Total:</th>
+                                                <th>Rs. {{ fee_payments|sum_attr:'amount_paid' }}</th>
+                                                <th>Rs. {{ pending_fees }}</th>
+                                                <th colspan="2"></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{% url 'finance:student_fee_payments' student.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-history"></i> View All Payment History
+                            </a>
+                            <a href="{% url 'finance:add_fee_payment' %}?student={{ student.id }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-plus"></i> Add New Fee Payment
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Fee Payment History -->
+                    <div class="mt-4">
+                        <h4 class="mb-3">Fee Payment History</h4>
+                        <a href="{% url 'finance:student_fee_payments' student.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-money-bill-wave"></i> View Payment History
+                        </a>
+                    </div>
+                    
+                    <!-- Attendance -->
+                    <div class="mt-4">
+                        <h4 class="mb-3">Attendance</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Total Classes</th>
+                                        <th>Present</th>
+                                        <th>Absent</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if attendance_summary %}
+                                        {% for subject, data in attendance_summary.items %}
+                                            <tr>
+                                                <td>{{ subject }}</td>
+                                                <td>{{ data.total }}</td>
+                                                <td>{{ data.present }}</td>
+                                                <td>{{ data.absent }}</td>
+                                                <td>
+                                                    <div class="progress">
+                                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.percentage }}%">
+                                                            {{ data.percentage }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center">No attendance data available</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Fee filter functionality
+    $('.fee-filter').click(function() {
+        $('.fee-filter').removeClass('active');
+        $(this).addClass('active');
+        
+        var filter = $(this).data('filter');
+        
+        if (filter === 'all') {
+            $('.fee-row').show();
+        } else if (filter === 'paid') {
+            $('.fee-row').hide();
+            $('.paid-fee').show();
+        } else if (filter === 'partial') {
+            $('.fee-row').hide();
+            $('.partial-fee').show();
+        } else if (filter === 'pending') {
+            $('.fee-row').hide();
+            $('.pending-fee').show();
+        }
+    });
+});
+</script>
+{% endblock %} 

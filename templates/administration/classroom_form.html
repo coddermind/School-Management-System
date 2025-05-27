@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if classroom %}Edit Classroom{% else %}Add Classroom{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{% if classroom %}Edit Classroom{% else %}Add Classroom{% endif %}</h1>
+                <a href="{% url 'administration:classroom_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Classrooms
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Classroom Name</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Enter a unique name for the classroom (e.g., "Room 101", "Science Lab")</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.capacity.id_for_label }}" class="form-label">Capacity</label>
+                            {{ form.capacity }}
+                            {% if form.capacity.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.capacity.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Maximum number of students that can be accommodated</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Optional: Add details about the classroom facilities, purpose, or other relevant information</small>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {% if classroom %}Update{% else %}Save{% endif %} Classroom
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

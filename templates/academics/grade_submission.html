@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Grade Submission - {{ submission.student.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Grade Submission</h1>
+        <a href="{% url 'academics:assignment_detail' submission.assignment.id %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Back to Assignment
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Submission Details -->
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Submission Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Assignment:</strong> {{ submission.assignment.title }}</p>
+                            <p><strong>Student:</strong> {{ submission.student.user.get_full_name }}</p>
+                            <p><strong>Roll Number:</strong> {{ submission.student.roll_number }}</p>
+                            <p><strong>Class:</strong> {{ submission.student.grade.name }}</p>
+                            <p><strong>Section:</strong> {{ submission.student.section.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"F d, Y H:i" }}</p>
+                            <p><strong>Due Date:</strong> {{ submission.assignment.due_date|date:"F d, Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if submission.status == 'submitted' %}
+                                <span class="badge badge-info">Submitted</span>
+                                {% elif submission.status == 'graded' %}
+                                <span class="badge badge-success">Graded</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Submitted:</strong> 
+                                {% if submission.assignment.due_date < submission.submitted_at.date %}
+                                <span class="badge badge-warning">Late</span>
+                                {% else %}
+                                <span class="badge badge-success">On Time</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if submission.submission_text %}
+                    <div class="mb-4">
+                        <h5>Submission Text</h5>
+                        <div class="p-3 bg-light rounded">
+                            {{ submission.submission_text|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if submission.file %}
+                    <div class="mb-4">
+                        <h5>Submitted File</h5>
+                        <a href="{{ submission.file.url }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-download"></i> Download Submission
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grading Form -->
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Grading Form</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="grade">Grade (out of {{ submission.assignment.max_score }})</label>
+                            <input type="number" class="form-control" id="grade" name="grade" 
+                                   min="0" max="{{ submission.assignment.max_score }}" step="0.1" 
+                                   value="{{ submission.grade|default:'' }}" required>
+                            <small class="form-text text-muted">Enter a grade between 0 and {{ submission.assignment.max_score }}</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedback">Feedback</label>
+                            <textarea class="form-control" id="feedback" name="feedback" rows="8">{{ submission.feedback|default:'' }}</textarea>
+                            <small class="form-text text-muted">Provide constructive feedback to the student</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Grade
+                        </button>
+                        <a href="{% url 'academics:assignment_detail' submission.assignment.id %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+            
+            {% if submission.assignment.grading_criteria %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Grading Criteria</h6>
+                </div>
+                <div class="card-body">
+                    <div class="p-3 bg-light rounded">
+                        {{ submission.assignment.grading_criteria|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

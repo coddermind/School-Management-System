@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Section Details - {{ section.name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Section Details: {{ section.name }}</h1>
+        <div>
+            <a href="{% url 'administration:section_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Sections
+            </a>
+            <a href="{% url 'administration:edit_section' section.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit Section
+            </a>
+            <a href="{% url 'administration:delete_section' section.id %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash"></i> Delete Section
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Section Details Card -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Section Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ section.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Grade/Class</th>
+                                    <td>{{ section.grade.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created Date</th>
+                                    <td>{{ section.created_at|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Last Updated</th>
+                                    <td>{{ section.updated_at|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Students</th>
+                                    <td>{{ students.count }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Schedule Card -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Class Schedule</h6>
+                </div>
+                <div class="card-body">
+                    {% if schedules %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Subject</th>
+                                    <th>Time</th>
+                                    <th>Teacher</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for schedule in schedules %}
+                                <tr>
+                                    <td>{{ schedule.day_of_week }}</td>
+                                    <td>{{ schedule.subject.name }}</td>
+                                    <td>{{ schedule.start_time }} - {{ schedule.end_time }}</td>
+                                    <td>{{ schedule.teacher.get_full_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center">
+                        <p>No schedule has been set for this section yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Students in this Section</h6>
+        </div>
+        <div class="card-body">
+            {% if students %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="studentsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Roll Number</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.id }}</td>
+                            <td>{{ student.user.get_full_name }}</td>
+                            <td>{{ student.roll_number }}</td>
+                            <td>{{ student.gender }}</td>
+                            <td>{{ student.user.phone_number }}</td>
+                            <td>
+                                <a href="{% url 'academics:student_detail' student.id %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center">
+                <p>No students are currently assigned to this section.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#studentsTable').DataTable({
+            "order": [[1, "asc"]]
+        });
+    });
+</script>
+{% endblock %} 

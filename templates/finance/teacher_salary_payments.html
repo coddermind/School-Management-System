@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Salary Payments - {{ teacher.get_full_name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Salary Payments for {{ teacher.get_full_name }}</h1>
+                <a href="{% url 'finance:salary_payment_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to All Payments
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Month/Year</th>
+                                    <th>Payment Date</th>
+                                    <th>Payment Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ payment.get_month_display }} {{ payment.year }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>{{ payment.get_payment_method_display }}</td>
+                                    <td>
+                                        {% if payment.is_paid %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No salary payments found for this teacher.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

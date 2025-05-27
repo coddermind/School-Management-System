@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if section %}Edit Section - {{ section.name }}{% else %}Add New Section{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if section %}Edit Section - {{ section.name }}{% else %}Add New Section{% endif %}
+        </h1>
+        <a href="{% url 'administration:section_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Sections
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Section Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group row">
+                    <label for="id_name" class="col-sm-2 col-form-label">Section Name *</label>
+                    <div class="col-sm-10">
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.name.errors }}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Example: A, B, C, or Section 1, etc.</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="id_grade" class="col-sm-2 col-form-label">Class/Grade *</label>
+                    <div class="col-sm-10">
+                        {{ form.grade }}
+                        {% if form.grade.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.grade.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="id_capacity" class="col-sm-2 col-form-label">Capacity</label>
+                    <div class="col-sm-10">
+                        {{ form.capacity }}
+                        {% if form.capacity.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.capacity.errors }}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Maximum number of students allowed in this section.</small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="id_teacher" class="col-sm-2 col-form-label">Class Teacher</label>
+                    <div class="col-sm-10">
+                        {{ form.teacher }}
+                        {% if form.teacher.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.teacher.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="id_description" class="col-sm-2 col-form-label">Description</label>
+                    <div class="col-sm-10">
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.description.errors }}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Any additional information about this section.</small>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">
+                        {% if section %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'administration:section_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

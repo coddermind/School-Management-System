@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Salary Structures - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Salary Structures</h1>
+        <a href="{% url 'finance:add_salary_structure' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Create New Salary Structure
+        </a>
+    </div>
+
+    <!-- Search and Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Search Teachers</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'finance:salary_structure_list' %}" class="mb-0">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search teacher name or email" value="{{ search_query|default:'' }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search fa-sm"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <a href="{% url 'finance:salary_structure_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt fa-sm"></i> Reset Filters
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Salary Structures Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Defined Salary Structures</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Basic Salary</th>
+                            <th>Allowances</th>
+                            <th>Deductions</th>
+                            <th>Net Salary</th>
+                            <th>Effective Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if salary_structures %}
+                            {% for structure in salary_structures %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if structure.teacher.profile_pic %}
+                                        <img src="{{ structure.teacher.profile_pic.url }}" alt="Profile" class="rounded-circle mr-2" style="width: 40px; height: 40px;">
+                                        {% else %}
+                                        <div class="rounded-circle bg-primary text-white mr-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            {{ structure.teacher.first_name|first }}{{ structure.teacher.last_name|first }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="font-weight-bold">{{ structure.teacher.get_full_name }}</div>
+                                            <small class="text-muted">{{ structure.teacher.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ structure.basic_salary }}</td>
+                                <td>{{ structure.allowances }}</td>
+                                <td>{{ structure.deductions }}</td>
+                                <td class="font-weight-bold">{{ structure.net_salary }}</td>
+                                <td>{{ structure.effective_date }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'finance:edit_salary_structure' structure.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="{% url 'finance:teacher_salary_payments' structure.teacher.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-history"></i> Payments
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-id="{{ structure.id }}" data-name="{{ structure.teacher.get_full_name }}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="py-4">
+                                        <div class="mb-3">
+                                            <i class="fas fa-money-bill-wave fa-4x text-gray-300"></i>
+                                        </div>
+                                        <p class="text-gray-500">No salary structures found.</p>
+                                        <a href="{% url 'finance:add_salary_structure' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Create New Salary Structure
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the salary structure for <span id="teacherName"></span>?</p>
+                <p class="text-danger">This action cannot be undone. All salary information for this teacher will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Set up delete confirmation modal
+        $('#deleteModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('id');
+            var name = button.data('name');
+            
+            var modal = $(this);
+            modal.find('#teacherName').text(name);
+            modal.find('#deleteForm').attr('action', '{% url "finance:delete_salary_structure" 0 %}'.replace('0', id));
+        });
+        
+        // Initialize datatable
+        $('#dataTable').DataTable({
+            "paging": true,
+            "searching": false,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "language": {
+                "emptyTable": "No salary structures found"
+            }
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Classes - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Classes</h1>
+                <a href="{% url 'administration:add_class' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Class
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    {% if classes %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Class Name</th>
+                                    <th>Students</th>
+                                    <th>Sections</th>
+                                    <th>Subjects</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for class in classes %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ class.name }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ class.student_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ class.sections.count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ class.class_subjects.count }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'administration:grade_sections' class.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-list"></i> Manage Sections
+                                        </a>
+                                        <a href="{% url 'administration:grade_subjects' class.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-book"></i> Manage Subjects
+                                        </a>
+                                        <a href="{% url 'administration:edit_class' class.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="{% url 'administration:delete_class' class.id %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No classes found. Click the "Add New Class" button to create one.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

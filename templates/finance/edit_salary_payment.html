@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'finance:salary_payment_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Salary Payments
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Update Salary Payment</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" id="editSalaryPaymentForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Teacher Information (Read Only) -->
+                        <div class="form-group">
+                            <label>Teacher</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <input type="text" class="form-control" value="{{ payment.teacher.get_full_name }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Month/Year Information (Read Only) -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Month</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" value="{{ payment.get_month_display }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Year</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" value="{{ payment.year }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Editable Payment Details -->
+                        <div class="form-group">
+                            <label for="payment_date">Payment Date <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                </div>
+                                <input type="date" name="payment_date" id="payment_date" class="form-control" value="{{ payment.payment_date|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-money-check-alt"></i></span>
+                                </div>
+                                <select name="payment_method" id="payment_method" class="form-control" required>
+                                    {% for value, text in payment_methods %}
+                                        <option value="{{ value }}" {% if payment.payment_method == value %}selected{% endif %}>{{ text }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="transaction_id">Transaction ID/Reference</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                </div>
+                                <input type="text" name="transaction_id" id="transaction_id" class="form-control" placeholder="Transaction reference number" value="{{ payment.transaction_id|default:'' }}">
+                            </div>
+                            <small class="form-text text-muted">Optional reference number for bank transfers, cheques, etc.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea name="remarks" id="remarks" class="form-control" rows="3" placeholder="Any additional notes">{{ payment.remarks|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="is_paid" name="is_paid" {% if payment.is_paid %}checked{% endif %}>
+                                <label class="custom-control-label" for="is_paid">Mark as Paid</label>
+                            </div>
+                            <small class="form-text text-muted">Uncheck if this is a pending payment</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Salary Details Preview -->
+                        <div class="card border-left-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="m-0 font-weight-bold">Salary Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    {% if payment.teacher.profile_pic %}
+                                        <img src="{{ payment.teacher.profile_pic.url }}" alt="Profile" class="img-profile rounded-circle mb-3" style="width: 100px; height: 100px;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-primary text-white mb-3 d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px; font-size: 36px;">
+                                            {{ payment.teacher.first_name|first }}{{ payment.teacher.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                    <h5>{{ payment.teacher.get_full_name }}</h5>
+                                    <p class="text-muted">{{ payment.teacher.email }}</p>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tr>
+                                            <td><strong>Basic Salary:</strong></td>
+                                            <td class="text-right">{{ payment.salary_structure.basic_salary }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Allowances:</strong></td>
+                                            <td class="text-right">+ {{ payment.salary_structure.allowances }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Deductions:</strong></td>
+                                            <td class="text-right">- {{ payment.salary_structure.deductions }}</td>
+                                        </tr>
+                                        <tr class="bg-light">
+                                            <td><strong>Net Salary:</strong></td>
+                                            <td class="text-right text-primary font-weight-bold">{{ payment.salary_structure.net_salary }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <div class="alert alert-secondary mt-3">
+                                    <strong>Payment For:</strong> {{ payment.get_month_display }} {{ payment.year }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-4">
+                            <h6 class="font-weight-bold"><i class="fas fa-exclamation-triangle mr-2"></i> Note</h6>
+                            <p class="mb-0">You can update the payment details such as payment date, method, and status. The salary amount is determined by the teacher's salary structure.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save mr-2"></i> Update Salary Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Form validation
+        $('#editSalaryPaymentForm').on('submit', function(e) {
+            var isValid = true;
+            
+            if (!$('#payment_date').val()) {
+                alert('Please select a payment date');
+                isValid = false;
+            }
+            
+            if (!$('#payment_method').val()) {
+                alert('Please select a payment method');
+                isValid = false;
+            }
+            
+            return isValid;
+        });
+    });
+</script>
+{% endblock %} 

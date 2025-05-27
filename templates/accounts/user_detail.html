@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}User Details - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">User Details</h1>
+        <div>
+            <a href="{% url 'accounts:edit_user' user_obj.id %}" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'accounts:delete_user' user_obj.id %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <!-- User Profile Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if user_obj.profile_pic %}
+                        <img src="{{ user_obj.profile_pic.url }}" alt="Profile Picture" class="img-profile rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="/static/img/undraw_profile.svg" alt="Default Profile" class="img-profile rounded-circle img-thumbnail mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    
+                    <h4>{{ user_obj.get_full_name }}</h4>
+                    <p>
+                        {% if user_obj.user_type == 'ADMIN' %}
+                            <span class="badge bg-danger">Admin</span>
+                        {% elif user_obj.user_type == 'TEACHER' %}
+                            <span class="badge bg-primary">Teacher</span>
+                        {% elif user_obj.user_type == 'STUDENT' %}
+                            <span class="badge bg-success">Student</span>
+                        {% endif %}
+                    </p>
+                    <hr>
+                    <div class="text-left">
+                        <p><strong>Email:</strong> {{ user_obj.email }}</p>
+                        <p><strong>Phone:</strong> {{ user_obj.phone_number|default:"Not provided" }}</p>
+                        <p><strong>Date of Birth:</strong> {{ user_obj.date_of_birth|date:"F d, Y"|default:"Not provided" }}</p>
+                        <p><strong>Address:</strong> {{ user_obj.address|default:"Not provided" }}</p>
+                        <p><strong>Date Joined:</strong> {{ user_obj.date_joined|date:"F d, Y" }}</p>
+                        <p><strong>Last Login:</strong> {{ user_obj.last_login|date:"F d, Y H:i"|default:"Never logged in" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Additional Information -->
+            {% if user_obj.is_teacher %}
+                <!-- Teacher Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Teacher Information</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if user_obj.teacher_profile %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Employee ID:</strong> {{ user_obj.teacher_profile.employee_id }}</p>
+                                    <p><strong>Qualifications:</strong> {{ user_obj.teacher_profile.qualification }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Experience:</strong> {{ user_obj.teacher_profile.experience }} years</p>
+                                    <p><strong>Joining Date:</strong> {{ user_obj.teacher_profile.joining_date|date:"F d, Y" }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle"></i> Teacher profile information not available.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% elif user_obj.is_student %}
+                <!-- Student Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Student Information</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if user_obj.student_profile %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Admission Number:</strong> {{ user_obj.student_profile.admission_number }}</p>
+                                    <p><strong>Blood Group:</strong> {{ user_obj.student_profile.blood_group|default:"Not provided" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Parent/Guardian:</strong> {{ user_obj.student_profile.parent_name|default:"Not provided" }}</p>
+                                    <p><strong>Parent Contact:</strong> {{ user_obj.student_profile.parent_phone|default:"Not provided" }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle"></i> Student profile information not available.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Activity Log -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> Activity log feature coming soon.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

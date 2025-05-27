@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if teacher %}Edit Teacher{% else %}Add Teacher{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if teacher %}Edit Teacher{% else %}Add Teacher{% endif %}</h1>
+        <a href="{% url 'academics:teacher_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Teachers
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Teacher Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                                <div class="text-danger">{{ user_form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                                <div class="text-danger">{{ user_form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.email.id_for_label }}" class="form-label">Email</label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <div class="text-danger">{{ user_form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ user_form.phone_number }}
+                            {% if user_form.phone_number.errors %}
+                                <div class="text-danger">{{ user_form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                            {{ user_form.date_of_birth }}
+                            {% if user_form.date_of_birth.errors %}
+                                <div class="text-danger">{{ user_form.date_of_birth.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ profile_form.employee_id.id_for_label }}" class="form-label">Employee ID</label>
+                            {{ profile_form.employee_id }}
+                            {% if profile_form.employee_id.errors %}
+                                <div class="text-danger">{{ profile_form.employee_id.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ profile_form.qualification.id_for_label }}" class="form-label">Qualification</label>
+                            {{ profile_form.qualification }}
+                            {% if profile_form.qualification.errors %}
+                                <div class="text-danger">{{ profile_form.qualification.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ profile_form.experience.id_for_label }}" class="form-label">Experience (years)</label>
+                            {{ profile_form.experience }}
+                            {% if profile_form.experience.errors %}
+                                <div class="text-danger">{{ profile_form.experience.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ profile_form.joining_date.id_for_label }}" class="form-label">Joining Date</label>
+                            {{ profile_form.joining_date }}
+                            {% if profile_form.joining_date.errors %}
+                                <div class="text-danger">{{ profile_form.joining_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.profile_pic.id_for_label }}" class="form-label">Profile Picture</label>
+                            {{ user_form.profile_pic }}
+                            {% if user_form.profile_pic.errors %}
+                                <div class="text-danger">{{ user_form.profile_pic.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ profile_form.basic_salary.id_for_label }}" class="form-label">Basic Salary</label>
+                            {{ profile_form.basic_salary }}
+                            {% if profile_form.basic_salary.errors %}
+                                <div class="text-danger">{{ profile_form.basic_salary.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Enter the basic monthly salary amount</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ user_form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ user_form.address }}
+                            {% if user_form.address.errors %}
+                                <div class="text-danger">{{ user_form.address.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if not teacher %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i> A default password <strong>teacher123</strong> will be assigned to this teacher account. The teacher can change it after logging in.
+                </div>
+                {% endif %}
+                
+                {{ user_form.user_type }}
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {% if teacher %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'academics:teacher_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datepicker for date fields
+        $('#{{ user_form.date_of_birth.id_for_label }}, #{{ profile_form.joining_date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+</script>
+{% endblock %} 

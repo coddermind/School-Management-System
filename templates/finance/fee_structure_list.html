@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Structures - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Fee Structures</h1>
+        <div>
+            <a href="{% url 'finance:add_fee_category' %}" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Add Category
+            </a>
+            <a href="{% url 'finance:add_fee_structure' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Add Fee Structure
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Fee Structures</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mb-2 mr-2">
+                    <label for="category" class="sr-only">Category</label>
+                    <select name="category" id="category" class="form-control">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:'s' %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-2 mr-2">
+                    <label for="grade" class="sr-only">Grade/Class</label>
+                    <select name="grade" id="grade" class="form-control">
+                        <option value="">All Grades</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}" {% if request.GET.grade == grade.id|stringformat:'s' %}selected{% endif %}>
+                            {{ grade.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mb-2 mr-2">Filter</button>
+                <a href="{% url 'finance:fee_structure_list' %}" class="btn btn-secondary mb-2">Reset</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Fee Structures Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Fee Structures</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="feeStructuresTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Grade/Class</th>
+                            <th>Amount</th>
+                            <th>Mandatory</th>
+                            <th>Applicable From</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if fee_structures %}
+                            {% for fee in fee_structures %}
+                            <tr>
+                                <td>{{ fee.id }}</td>
+                                <td>{{ fee.name }}</td>
+                                <td>{{ fee.category.name }}</td>
+                                <td>{{ fee.grade.name }}</td>
+                                <td>Rs.{{ fee.amount }}</td>
+                                <td>
+                                    {% if fee.is_mandatory %}
+                                    <span class="badge badge-success">Yes</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ fee.applicable_from|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'finance:edit_fee_structure' fee.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'finance:delete_fee_structure' fee.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center">No fee structures found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize select2 for dropdowns
+        $('#category, #grade').select2({
+            width: '100%'
+        });
+        
+        // Initialize DataTable
+        $('#feeStructuresTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true
+        });
+    });
+</script>
+{% endblock %} 

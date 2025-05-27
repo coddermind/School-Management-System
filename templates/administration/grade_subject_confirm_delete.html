@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Subject from {{ grade.display_name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Confirm Delete</h1>
+        <a href="{% url 'administration:grade_subjects' grade.id %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Subjects
+        </a>
+    </div>
+
+    <!-- Delete Confirmation Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Delete Subject from Class</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Are you sure you want to delete subject <strong>{{ class_subject.subject.name }}</strong> from <strong>{{ grade.display_name }}</strong>?
+                <p class="mt-2">This action cannot be undone. All timetable entries and other data related to this subject for this class will be permanently removed from the system.</p>
+                
+                {% if class_subject.teacher %}
+                <p class="mt-2"><strong>Warning:</strong> This will also remove the assignment of teacher <strong>{{ class_subject.teacher.get_full_name }}</strong> from teaching this subject in this class.</p>
+                {% endif %}
+            </div>
+            
+            <div class="mt-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Confirm Delete
+                    </button>
+                    <a href="{% url 'administration:grade_subjects' grade.id %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

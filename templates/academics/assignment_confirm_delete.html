@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Assignment - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Confirm Delete Assignment</h1>
+        <a href="{% url 'academics:assignment_detail' assignment.id %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Assignment
+        </a>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Delete Assignment</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> Are you sure you want to delete the assignment <strong>{{ assignment.title }}</strong>?
+            </div>
+            <p>This action cannot be undone. Deleting this assignment will also remove all student submissions associated with it.</p>
+            
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>Title</th>
+                            <td>{{ assignment.title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Class</th>
+                            <td>{{ assignment.grade.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Section</th>
+                            <td>{{ assignment.section.name|default:"All Sections" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Subject</th>
+                            <td>{{ assignment.subject.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Due Date</th>
+                            <td>{{ assignment.due_date|date:"F d, Y" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash fa-sm"></i> Delete Assignment
+                </button>
+                <a href="{% url 'academics:assignment_detail' assignment.id %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

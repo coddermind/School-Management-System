@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Class Subjects - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Class Subjects</h1>
+                <a href="{% url 'administration:add_class_subject' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Assign Subject to Class
+                </a>
+            </div>
+            
+            <!-- Filter Form -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filter Options</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-0">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label for="grade" class="form-label">Class/Grade</label>
+                                <select name="grade" id="grade" class="form-control">
+                                    <option value="">All Grades</option>
+                                    {% for grade in grades %}
+                                        <option value="{{ grade.id }}" {% if selected_grade == grade.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ grade.display_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="section" class="form-label">Section</label>
+                                <select name="section" id="section" class="form-control">
+                                    <option value="">All Sections</option>
+                                    {% for section in sections %}
+                                        <option value="{{ section.id }}" {% if selected_section == section.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ section.grade.display_name }} - Section {{ section.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select name="subject" id="subject" class="form-control">
+                                    <option value="">All Subjects</option>
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ subject.name }} ({{ subject.code }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="teacher" class="form-label">Teacher</label>
+                                <select name="teacher" id="teacher" class="form-control">
+                                    <option value="">All Teachers</option>
+                                    {% for teacher in teachers %}
+                                        <option value="{{ teacher.id }}" {% if selected_teacher == teacher.id|stringformat:"i" %}selected{% endif %}>
+                                            {{ teacher.get_full_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mt-3">
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-filter"></i> Apply Filters
+                                    </button>
+                                    <a href="{% url 'administration:class_subject_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-undo"></i> Reset
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Class-Subject Assignments</h6>
+                </div>
+                <div class="card-body">
+                    {% if class_subjects %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Class/Grade</th>
+                                    <th>Section</th>
+                                    <th>Students</th>
+                                    <th>Subject</th>
+                                    <th>Teacher</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for class_subject in class_subjects %}
+                                <tr>
+                                    <td>{{ class_subject.grade.display_name }}</td>
+                                    <td>
+                                        {% if class_subject.section %}
+                                            Section {{ class_subject.section.name }}
+                                        {% else %}
+                                            <span class="text-muted">All Sections</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ class_subject.student_count }}</span>
+                                    </td>
+                                    <td>{{ class_subject.subject.name }} ({{ class_subject.subject.code }})</td>
+                                    <td>
+                                        {% if class_subject.teacher %}
+                                            {{ class_subject.teacher.get_full_name }}
+                                        {% else %}
+                                            <span class="text-danger">Not assigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'administration:edit_class_subject' class_subject.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'administration:delete_class_subject' class_subject.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No class-subject assignments found. Click the "Assign Subject to Class" button to create one.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#dataTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "order": [[0, 'asc'], [1, 'asc']]
+        });
+        
+        // Function to update sections based on selected grade
+        function updateSections() {
+            var gradeId = $('#grade').val();
+            var sectionField = $('#section');
+            
+            // Save current selection if possible
+            var currentSelection = sectionField.val();
+            
+            // Clear current options
+            sectionField.empty();
+            
+            // Add default option
+            sectionField.append($('<option></option>').attr('value', '').text('All Sections'));
+            
+            // If no grade selected, no need to load sections
+            if (!gradeId) {
+                return;
+            }
+            
+            // Fetch sections for the selected grade
+            $.ajax({
+                url: "{% url 'administration:get_sections_for_grade' %}",
+                data: {'grade_id': gradeId},
+                dataType: 'json',
+                success: function(data) {
+                    if (data.sections) {
+                        // Add each section as an option
+                        $.each(data.sections, function(id, name) {
+                            sectionField.append($('<option></option>').attr('value', id).text(name));
+                        });
+                        
+                        // Try to restore previous selection if it exists
+                        if (currentSelection) {
+                            sectionField.val(currentSelection);
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update sections when grade changes
+        $('#grade').on('change', updateSections);
+        
+        // Initial call to populate sections if grade is already selected
+        updateSections();
+    });
+</script>
+{% endblock %} 

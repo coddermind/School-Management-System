@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if attendance %}Edit Attendance - School Management System{% else %}Add Attendance - School Management System{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if attendance %}Edit Attendance Record{% else %}Add Attendance Record{% endif %}
+        </h1>
+        <a href="{% url 'academics:attendance_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Back to List
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Attendance Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Student Field -->
+                        <div class="form-group">
+                            <label for="{{ form.student.id_for_label }}">Student <span class="text-danger">*</span></label>
+                            {{ form.student }}
+                            {% if form.student.errors %}
+                            <div class="text-danger">
+                                {% for error in form.student.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.student.help_text }}</small>
+                        </div>
+                        
+                        <!-- Subject Field -->
+                        <div class="form-group">
+                            <label for="{{ form.subject.id_for_label }}">Subject <span class="text-danger">*</span></label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger">
+                                {% for error in form.subject.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.subject.help_text }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Date Field -->
+                        <div class="form-group">
+                            <label for="{{ form.date.id_for_label }}">Date <span class="text-danger">*</span></label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <div class="text-danger">
+                                {% for error in form.date.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">{{ form.date.help_text }}</small>
+                        </div>
+                        
+                        <!-- Is Present Field -->
+                        <div class="form-group">
+                            <label for="{{ form.is_present.id_for_label }}">Attendance Status <span class="text-danger">*</span></label>
+                            <div>
+                                {{ form.is_present }}
+                                {% if form.is_present.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.is_present.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">{{ form.is_present.help_text }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Remarks Field -->
+                <div class="form-group">
+                    <label for="{{ form.remarks.id_for_label }}">Remarks</label>
+                    {{ form.remarks }}
+                    {% if form.remarks.errors %}
+                    <div class="text-danger">
+                        {% for error in form.remarks.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">{{ form.remarks.help_text }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 
+                        {% if attendance %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'academics:attendance_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datepicker for date field
+        $('#{{ form.date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+        
+        // Initialize select2 for student and subject fields
+        $('#{{ form.student.id_for_label }}, #{{ form.subject.id_for_label }}').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Select an option'
+        });
+    });
+</script>
+{% endblock %} 

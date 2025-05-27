@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Assignment - {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Submit Assignment</h1>
+        <a href="{% url 'academics:assignment_detail' assignment.id %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Back to Assignment
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Assignment Details -->
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Assignment Details</h6>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3">{{ assignment.title }}</h5>
+                    
+                    <p><strong>Class:</strong> {{ assignment.grade.name }}</p>
+                    <p><strong>Section:</strong> {{ assignment.section.name|default:"All Sections" }}</p>
+                    <p><strong>Subject:</strong> {{ assignment.subject.name }}</p>
+                    <p><strong>Due Date:</strong> {{ assignment.due_date|date:"F d, Y" }}</p>
+                    <p><strong>Maximum Score:</strong> {{ assignment.max_score }}</p>
+                    
+                    <div class="mb-3">
+                        <h6>Description:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ assignment.description|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    {% if assignment.instructions %}
+                    <div class="mb-3">
+                        <h6>Instructions:</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ assignment.instructions|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if assignment.file %}
+                    <div class="mb-3">
+                        <a href="{{ assignment.file.url }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-download"></i> Download Assignment File
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Submission Form -->
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {% if existing_submission %}
+                        Update Your Submission
+                        {% else %}
+                        Submit Your Work
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if existing_submission %}
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle"></i> You have already submitted this assignment on 
+                        <strong>{{ existing_submission.submitted_at|date:"F d, Y H:i" }}</strong>. 
+                        You can update your submission below.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="submission_text">Submission Text</label>
+                            <textarea id="submission_text" name="submission_text" class="form-control" rows="10">{{ existing_submission.submission_text|default:'' }}</textarea>
+                            <small class="form-text text-muted">You can type your answer here if the assignment doesn't require file submission.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="submission_file">Upload File (Optional)</label>
+                            <input type="file" class="form-control-file" id="submission_file" name="submission_file">
+                            {% if existing_submission and existing_submission.file %}
+                            <div class="mt-2">
+                                <span class="text-muted">Current file: </span>
+                                <a href="{{ existing_submission.file.url }}" target="_blank">{{ existing_submission.file.name }}</a>
+                                <small class="form-text text-muted">Upload a new file to replace the current one.</small>
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Supported file types: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, RAR, TXT, JPG, PNG, GIF</small>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            {% if existing_submission %}
+                            Updating your submission will replace your previous work.
+                            {% else %}
+                            Please make sure you have reviewed your work before submitting.
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 
+                            {% if existing_submission %}
+                            Update Submission
+                            {% else %}
+                            Submit Assignment
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'academics:assignment_detail' assignment.id %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

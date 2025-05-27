@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if class_subject %}Edit Class Subject{% else %}Assign Subject to Class{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{% if class_subject %}Edit Class Subject{% else %}Assign Subject to Class{% endif %}</h1>
+                <a href="{% url 'administration:class_subject_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Class Subjects
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.grade.id_for_label }}" class="form-label">Class/Grade</label>
+                                {{ form.grade }}
+                                {% if form.grade.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.grade.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.section.id_for_label }}" class="form-label">Section</label>
+                                {{ form.section }}
+                                {% if form.section.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.section.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Optional. Select a section for this class.</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">Subject</label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.subject.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.teacher.id_for_label }}" class="form-label">Teacher</label>
+                                {{ form.teacher }}
+                                {% if form.teacher.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.teacher.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Optional. You can assign a teacher to this subject later.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle"></i> Note: Each subject can only be assigned once to a class. If you need to change the teacher, please edit the existing assignment.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {% if class_subject %}Update Assignment{% else %}Save Assignment{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Function to update sections based on selected grade
+    function updateSections() {
+        var gradeId = $('#{{ form.grade.id_for_label }}').val();
+        
+        if (gradeId) {
+            // Clear current options
+            var sectionField = $('#{{ form.section.id_for_label }}');
+            sectionField.empty();
+            
+            // Add empty option
+            sectionField.append($('<option></option>').attr('value', '').text('---------'));
+            
+            // Fetch sections for the selected grade
+            $.ajax({
+                url: "{% url 'administration:get_sections_for_grade' %}",
+                data: {'grade_id': gradeId},
+                dataType: 'json',
+                success: function(data) {
+                    if (data.sections) {
+                        // Add each section as an option
+                        $.each(data.sections, function(id, name) {
+                            sectionField.append($('<option></option>').attr('value', id).text(name));
+                        });
+                        
+                        // If we have a pre-selected section, select it
+                        {% if form.instance.section %}
+                        sectionField.val('{{ form.instance.section.id }}');
+                        {% endif %}
+                    }
+                }
+            });
+        }
+    }
+    
+    // Update sections when grade changes
+    $('#{{ form.grade.id_for_label }}').on('change', updateSections);
+    
+    // Initial call to populate sections if grade is already selected
+    updateSections();
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exam.name }} Details - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Exam Details</h1>
+        <div>
+            <a href="{% url 'academics:exam_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Exams
+            </a>
+            {% if user.is_admin or user.is_teacher %}
+            <a href="{% url 'academics:edit_exam' exam.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit Exam
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Exam Information Card -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Exam Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Exam Name</div>
+                            <div class="h5 mb-3 font-weight-bold text-gray-800">{{ exam.name }}</div>
+
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Exam Type</div>
+                            <div class="h6 mb-3 text-gray-800">{{ exam.exam_type }}</div>
+
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Class/Grade</div>
+                            <div class="h6 mb-3 text-gray-800">{{ exam.grade.name }}</div>
+
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Academic Session</div>
+                            <div class="h6 mb-3 text-gray-800">{{ exam.academic_session.name }}</div>
+
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Date Range</div>
+                            <div class="h6 mb-3 text-gray-800">{{ exam.start_date|date:"M d, Y" }} - {{ exam.end_date|date:"M d, Y" }}</div>
+
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Description</div>
+                            <div class="text-gray-800 mb-3">{{ exam.description|default:"No description provided." }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Stats Card -->
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Exam Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Subjects
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ schedules.count }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Total Students
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ student_count }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Duration
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ exam_duration }} days</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Status
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ exam_status }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Schedule Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Schedule</h6>
+            {% if user.is_admin or user.is_teacher %}
+            <a href="{% url 'academics:add_exam_schedule' exam.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Schedule
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if schedules %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="scheduleDataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Max Marks</th>
+                            {% if user.is_admin or user.is_teacher %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>{{ schedule.subject.name }}</td>
+                            <td>{{ schedule.date|date:"M d, Y" }}</td>
+                            <td>{{ schedule.start_time }} - {{ schedule.end_time }}</td>
+                            <td>{{ schedule.classroom.name }}</td>
+                            <td>{{ schedule.max_marks }}</td>
+                            {% if user.is_admin or user.is_teacher %}
+                            <td>
+                                <a href="{% url 'academics:edit_exam_schedule' schedule.id %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'academics:delete_exam_schedule' schedule.id %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center my-4">
+                <div class="text-gray-500">No schedule has been added for this exam yet.</div>
+                {% if user.is_admin or user.is_teacher %}
+                <a href="{% url 'academics:add_exam_schedule' exam.id %}" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus"></i> Add First Schedule
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if user.is_admin or user.is_teacher %}
+    <!-- Results & Grading Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Results & Grading</h6>
+            <div>
+                <a href="{% url 'academics:exam_result_list' exam.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-list"></i> View Results
+                </a>
+                <a href="{% url 'academics:generate_result_sheet' exam.id %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel"></i> Generate Result Sheet
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Result Status</h5>
+                    <div class="progress mb-4">
+                        <div class="progress-bar" role="progressbar" style="width: {{ result_percentage }}%" 
+                            aria-valuenow="{{ result_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ result_percentage }}%</div>
+                    </div>
+                    <p>{{ results_count }} out of {{ total_possible_results }} results have been recorded.</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Actions</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Enter Results
+                            <a href="{% url 'academics:enter_marks' exam.id %}" class="btn btn-sm btn-primary">Go</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Publish Results
+                            <a href="{% url 'academics:publish_results' exam.id %}" class="btn btn-sm btn-warning">Go</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#scheduleDataTable').DataTable({
+            order: [[1, 'asc'], [2, 'asc']], // Sort by date, then time
+            responsive: true
+        });
+    });
+</script>
+{% endblock %} 

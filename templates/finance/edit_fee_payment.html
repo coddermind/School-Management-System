@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h5>{{ title }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Fee Name</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fee_name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Fee Amount</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{ fee_amount }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="amount_paid">Amount Paid (Rs.)</label>
+                            <input type="number" class="form-control" id="amount_paid" name="amount_paid" 
+                                   value="{{ payment.amount_paid|default_if_none:'' }}" required min="1" max="{{ fee_amount }}">
+                            <small class="form-text text-muted">Maximum amount: Rs. {{ fee_amount }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method</label>
+                            <select class="form-control" id="payment_method" name="payment_method" required>
+                                <option value="">Select Payment Method</option>
+                                {% for method_code, method_name in payment_methods %}
+                                <option value="{{ method_code }}" {% if payment.payment_method == method_code %}selected{% endif %}>
+                                    {{ method_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="payment_date">Payment Date</label>
+                            <input type="date" class="form-control" id="payment_date" name="payment_date" 
+                                   value="{{ payment.payment_date|date:'Y-m-d'|default:current_date }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="remarks">Remarks (Optional)</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2">{{ payment.remarks }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary">Process Payment</button>
+                    <a href="{% url 'academics:student_detail' payment.student.id %}" class="btn btn-secondary ml-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

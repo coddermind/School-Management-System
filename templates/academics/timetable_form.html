@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Timetable Entry{% else %}Add Timetable Entry{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Edit Timetable Entry{% else %}Add Timetable Entry{% endif %}</h1>
+        <a href="{% url 'academics:timetable_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Timetable
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Timetable Entry Information</h6>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Debug area to show form errors -->
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <form method="post" id="timetableForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.academic_session.id_for_label }}">Academic Session</label>
+                        {{ form.academic_session }}
+                        {% if form.academic_session.errors %}
+                            <div class="text-danger">{{ form.academic_session.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.day.id_for_label }}">Day</label>
+                        {{ form.day }}
+                        {% if form.day.errors %}
+                            <div class="text-danger">{{ form.day.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.grade.id_for_label }}">Class/Grade</label>
+                        {{ form.grade }}
+                        {% if form.grade.errors %}
+                            <div class="text-danger">{{ form.grade.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a grade to see available subjects and sections</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.section.id_for_label }}">Section</label>
+                        {{ form.section }}
+                        {% if form.section.errors %}
+                            <div class="text-danger">{{ form.section.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.time_slot.id_for_label }}">Time Slot</label>
+                        {{ form.time_slot }}
+                        {% if form.time_slot.errors %}
+                            <div class="text-danger">{{ form.time_slot.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.subject.id_for_label }}">Subject</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger">{{ form.subject.errors }}</div>
+                        {% endif %}
+                        <div id="teacherInfo" class="mt-2 alert alert-info" style="display: none;">
+                            <i class="fas fa-chalkboard-teacher"></i> <strong>Teacher:</strong> <span id="teacherName"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                {{ form.teacher }}
+                <div id="debug-info" class="mb-3" style="display: none;">
+                    <div class="alert alert-secondary">
+                        <h6>Debug Information:</h6>
+                        <div id="debug-teacher-value"></div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Note: 
+                    <ul>
+                        <li>Each time slot can only be assigned once per class, section, and day.</li>
+                        <li>The teacher is automatically assigned based on the subject and grade selection.</li>
+                        <li>System will check for scheduling conflicts to prevent double-booking teachers.</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary" id="saveButton">
+                        <i class="fas fa-save"></i> {% if form.instance.pk %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'academics:timetable_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Enable debug mode for teacher selection troubleshooting
+        const debugMode = true;  // Set to false in production
+        
+        if (debugMode) {
+            // Show debug information
+            $('#debug-info').show();
+        }
+        
+        // Add select2 to dropdowns for better user experience
+        $('select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Select an option'
+        });
+        
+        // Show debug information when in debug mode
+        function updateDebugInfo() {
+            $('#debug-teacher-value').text('Teacher ID: ' + $('#{{ form.teacher.id_for_label }}').val());
+        }
+        
+        // Function to load grade-specific sections
+        function loadSectionsForGrade(gradeId) {
+            if (!gradeId) return;
+            
+            // Clear current section selection
+            $('#{{ form.section.id_for_label }}').empty().trigger('change');
+            
+            // Show loading indicator
+            $('#{{ form.section.id_for_label }}').append('<option value="">Loading sections...</option>').trigger('change');
+            
+            // Fetch sections for the selected grade using AJAX
+            $.ajax({
+                url: '/academics/api/grade/' + gradeId + '/sections/',
+                dataType: 'json',
+                success: function(data) {
+                    $('#{{ form.section.id_for_label }}').empty();
+                    $('#{{ form.section.id_for_label }}').append('<option value="">Select a section</option>');
+                    
+                    // Add the sections from the response
+                    if (data.sections && data.sections.length > 0) {
+                        $.each(data.sections, function(index, section) {
+                            $('#{{ form.section.id_for_label }}').append(
+                                $('<option></option>').val(section.id).html(section.name)
+                            );
+                        });
+                        
+                        // If we're editing and a section was previously selected
+                        {% if form.section.value %}
+                        $('#{{ form.section.id_for_label }}').val('{{ form.section.value }}').trigger('change');
+                        {% endif %}
+                    } else {
+                        $('#{{ form.section.id_for_label }}').append('<option value="">No sections found</option>');
+                    }
+                    
+                    // Trigger the change event to update Select2
+                    $('#{{ form.section.id_for_label }}').trigger('change');
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading sections:", error);
+                    // On error, show error message
+                    $('#{{ form.section.id_for_label }}').empty();
+                    $('#{{ form.section.id_for_label }}').append('<option value="">Error loading sections</option>');
+                    $('#{{ form.section.id_for_label }}').trigger('change');
+                }
+            });
+        }
+        
+        // Function to load grade-specific subjects
+        function loadSubjectsForGrade(gradeId) {
+            if (!gradeId) return;
+            
+            // Clear current subject selection
+            $('#{{ form.subject.id_for_label }}').empty().trigger('change');
+            
+            // Show loading indicator
+            $('#{{ form.subject.id_for_label }}').append('<option value="">Loading subjects...</option>').trigger('change');
+            
+            // Fetch subjects for the selected grade using AJAX
+            $.ajax({
+                url: '/academics/api/grade/' + gradeId + '/subjects/',
+                dataType: 'json',
+                success: function(data) {
+                    $('#{{ form.subject.id_for_label }}').empty();
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Select a subject</option>');
+                    
+                    // Add the subjects from the response
+                    if (data.subjects && data.subjects.length > 0) {
+                        $.each(data.subjects, function(index, subject) {
+                            var option = $('<option></option>').val(subject.id).html(subject.name);
+                            
+                            // Store teacher info as data attribute
+                            if (subject.teacher_name) {
+                                option.attr('data-teacher', subject.teacher_name);
+                                option.attr('data-teacher-id', subject.teacher_id);
+                            }
+                            
+                            $('#{{ form.subject.id_for_label }}').append(option);
+                        });
+                        
+                        // If we're editing and a subject was previously selected
+                        {% if form.subject.value %}
+                        $('#{{ form.subject.id_for_label }}').val('{{ form.subject.value }}').trigger('change');
+                        {% endif %}
+                    } else {
+                        $('#{{ form.subject.id_for_label }}').append('<option value="">No subjects found</option>');
+                    }
+                    
+                    // Trigger the change event to update Select2
+                    $('#{{ form.subject.id_for_label }}').trigger('change');
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading subjects:", error);
+                    // On error, show error message
+                    $('#{{ form.subject.id_for_label }}').empty();
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Error loading subjects</option>');
+                    $('#{{ form.subject.id_for_label }}').trigger('change');
+                }
+            });
+        }
+        
+        // Function to load available subjects based on selected parameters
+        function loadAvailableSubjects() {
+            var gradeId = $('#{{ form.grade.id_for_label }}').val();
+            var sectionId = $('#{{ form.section.id_for_label }}').val();
+            var dayId = $('#{{ form.day.id_for_label }}').val();
+            var timeSlotId = $('#{{ form.time_slot.id_for_label }}').val();
+            var academicSessionId = $('#{{ form.academic_session.id_for_label }}').val();
+            
+            // Only proceed if all required fields are selected
+            if (gradeId && dayId && timeSlotId && academicSessionId) {
+                // Clear current subject selection
+                $('#{{ form.subject.id_for_label }}').empty().trigger('change');
+                
+                // Show loading indicator
+                $('#{{ form.subject.id_for_label }}').append('<option value="">Loading available subjects...</option>').trigger('change');
+                
+                // Fetch available subjects using AJAX
+                $.ajax({
+                    url: '{% url "academics:available_subjects_api" %}',
+                    data: {
+                        'grade_id': gradeId,
+                        'section_id': sectionId,
+                        'day_id': dayId,
+                        'time_slot_id': timeSlotId,
+                        'academic_session_id': academicSessionId
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#{{ form.subject.id_for_label }}').empty();
+                        $('#{{ form.subject.id_for_label }}').append('<option value="">Select a subject</option>');
+                        
+                        // Hide any existing warnings
+                        $('.conflict-warning').remove();
+                        
+                        // Add the subjects from the response with availability info
+                        if (data.subjects && data.subjects.length > 0) {
+                            $.each(data.subjects, function(index, subject) {
+                                var option = $('<option></option>').val(subject.id).html(subject.name);
+                                
+                                // Store teacher info as data attribute
+                                if (subject.teacher_name) {
+                                    option.attr('data-teacher', subject.teacher_name);
+                                    option.attr('data-teacher-id', subject.teacher_id);
+                                }
+                                
+                                // If subject is not available, disable it and show reason
+                                if (!subject.is_available || subject.conflict_reason) {
+                                    option.attr('disabled', 'disabled');
+                                    
+                                    if (subject.conflict_reason) {
+                                        option.attr('data-conflict', subject.conflict_reason);
+                                        option.text(subject.name + ' ⚠️');
+                                    } else {
+                                        option.text(subject.name + ' ⚠️ (Already scheduled)');
+                                    }
+                                }
+                                
+                                $('#{{ form.subject.id_for_label }}').append(option);
+                            });
+                            
+                            // If we're editing and a subject was previously selected
+                            {% if form.subject.value %}
+                            var subjectVal = '{{ form.subject.value }}';
+                            // Only select if the option exists and is not disabled
+                            if ($('#{{ form.subject.id_for_label }} option[value="' + subjectVal + '"]:not([disabled])').length) {
+                                $('#{{ form.subject.id_for_label }}').val(subjectVal).trigger('change');
+                            }
+                            {% endif %}
+                        } else {
+                            $('#{{ form.subject.id_for_label }}').append('<option value="">No subjects found</option>');
+                        }
+                        
+                        // Trigger the change event to update Select2
+                        $('#{{ form.subject.id_for_label }}').trigger('change');
+                        
+                        // Show summary of unavailable subjects
+                        if ((data.scheduled_subjects && data.scheduled_subjects.length > 0) || 
+                            (data.teachers_busy && Object.keys(data.teachers_busy).length > 0)) {
+                            var warningHtml = '<div class="alert alert-warning mt-2 conflict-warning">';
+                            warningHtml += '<i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> ';
+                            
+                            if (data.scheduled_subjects && data.scheduled_subjects.length > 0) {
+                                warningHtml += '<p>Some subjects are already scheduled for this class, section, day and time slot.</p>';
+                            }
+                            
+                            if (data.teachers_busy && Object.keys(data.teachers_busy).length > 0) {
+                                warningHtml += '<p>Some teachers are already teaching other classes during this time slot.</p>';
+                            }
+                            
+                            warningHtml += '</div>';
+                            $('#{{ form.subject.id_for_label }}').after(warningHtml);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error loading available subjects:", error);
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            console.error("Server message:", xhr.responseJSON.message);
+                        }
+                        
+                        // On error, show error message
+                        $('#{{ form.subject.id_for_label }}').empty();
+                        $('#{{ form.subject.id_for_label }}').append('<option value="">Error loading subjects</option>');
+                        $('#{{ form.subject.id_for_label }}').trigger('change');
+                    }
+                });
+            } else {
+                // If required fields are not selected, show appropriate message
+                $('#{{ form.subject.id_for_label }}').empty();
+                
+                if (!academicSessionId) {
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Select academic session first</option>');
+                } else if (!gradeId) {
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Select grade first</option>');
+                } else if (!dayId) {
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Select day first</option>');
+                } else if (!timeSlotId) {
+                    $('#{{ form.subject.id_for_label }}').append('<option value="">Select time slot first</option>');
+                }
+                
+                $('#{{ form.subject.id_for_label }}').trigger('change');
+                
+                // Hide teacher info
+                $('#teacherInfo').hide();
+            }
+        }
+        
+        // Academic session change handler
+        $('#{{ form.academic_session.id_for_label }}').change(function() {
+            loadAvailableSubjects();
+        });
+        
+        // When grade changes, update section and subject options
+        $('#{{ form.grade.id_for_label }}').change(function() {
+            var gradeId = $(this).val();
+            if (gradeId) {
+                // Load sections for the selected grade
+                loadSectionsForGrade(gradeId);
+                
+                // Load subjects for the selected grade
+                loadSubjectsForGrade(gradeId);
+            } else {
+                // If no grade selected, clear section dropdown
+                $('#{{ form.section.id_for_label }}').empty();
+                $('#{{ form.section.id_for_label }}').append('<option value="">Select grade first</option>');
+                $('#{{ form.section.id_for_label }}').trigger('change');
+                
+                // Also clear subjects
+                $('#{{ form.subject.id_for_label }}').empty();
+                $('#{{ form.subject.id_for_label }}').append('<option value="">Select grade first</option>');
+                $('#{{ form.subject.id_for_label }}').trigger('change');
+                
+                // Hide teacher info
+                $('#teacherInfo').hide();
+            }
+        });
+        
+        // When section changes, update available subjects
+        $('#{{ form.section.id_for_label }}').change(function() {
+            loadAvailableSubjects();
+        });
+        
+        // When day changes, update available subjects
+        $('#{{ form.day.id_for_label }}').change(function() {
+            loadAvailableSubjects();
+        });
+        
+        // When time slot changes, update available subjects
+        $('#{{ form.time_slot.id_for_label }}').change(function() {
+            loadAvailableSubjects();
+        });
+        
+        // When subject changes, update teacher info and set hidden field
+        $('#{{ form.subject.id_for_label }}').change(function() {
+            var selectedOption = $(this).find('option:selected');
+            var teacherName = selectedOption.data('teacher');
+            var teacherId = selectedOption.data('teacher-id');
+            var conflict = selectedOption.data('conflict');
+            
+            // Clear any existing conflict messages
+            $('#conflictInfo').remove();
+            
+            if (teacherName && teacherId) {
+                // Show teacher info
+                $('#teacherName').text(teacherName);
+                $('#teacherInfo').show();
+                
+                // Set hidden teacher field
+                $('#{{ form.teacher.id_for_label }}').val(teacherId);
+                if (debugMode) {
+                    console.log("Setting teacher ID to:", teacherId);
+                    updateDebugInfo();
+                }
+                
+                // If there's a conflict, show the conflict info
+                if (conflict) {
+                    var conflictHtml = '<div id="conflictInfo" class="mt-2 alert alert-danger">';
+                    conflictHtml += '<i class="fas fa-exclamation-circle"></i> <strong>Warning:</strong> ' + conflict;
+                    conflictHtml += '</div>';
+                    $('#teacherInfo').after(conflictHtml);
+                }
+            } else {
+                // Hide teacher info
+                $('#teacherInfo').hide();
+                $('#{{ form.teacher.id_for_label }}').val('');
+                if (debugMode) {
+                    console.log("Clearing teacher ID");
+                    updateDebugInfo();
+                }
+            }
+        });
+        
+        // Form submission handling
+        $('#timetableForm').on('submit', function(e) {
+            // Update debug info once more before submission
+            if (debugMode) {
+                updateDebugInfo();
+                console.log("Form submitted with teacher ID:", $('#{{ form.teacher.id_for_label }}').val());
+            }
+            
+            // Check all required fields
+            var academicSession = $('#{{ form.academic_session.id_for_label }}').val();
+            var grade = $('#{{ form.grade.id_for_label }}').val();
+            var section = $('#{{ form.section.id_for_label }}').val();
+            var day = $('#{{ form.day.id_for_label }}').val();
+            var timeSlot = $('#{{ form.time_slot.id_for_label }}').val();
+            var subject = $('#{{ form.subject.id_for_label }}').val();
+            
+            if (!academicSession || !grade || !section || !day || !timeSlot || !subject) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return false;
+            }
+            
+            // Disable the save button to prevent multiple submissions
+            $('#saveButton').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        });
+        
+        // Initialize form for editing
+        if ($('#{{ form.grade.id_for_label }}').val()) {
+            // If grade already has a value (editing mode)
+            var gradeId = $('#{{ form.grade.id_for_label }}').val();
+            loadSectionsForGrade(gradeId);
+            loadSubjectsForGrade(gradeId);
+            
+            // If teacher is already set, show it
+            var teacherId = $('#{{ form.teacher.id_for_label }}').val();
+            if (teacherId) {
+                if (debugMode) {
+                    console.log("Initial teacher ID:", teacherId);
+                    updateDebugInfo();
+                }
+                
+                // Try to find and display the teacher's name if possible
+                {% if form.instance.pk and form.instance.teacher %}
+                $('#teacherName').text('{{ form.instance.teacher.get_full_name }}');
+                $('#teacherInfo').show();
+                {% endif %}
+            }
+        }
+        
+        // On page load, if we already have values (like in edit mode), make sure to show teacher info
+        {% if form.instance.pk and form.instance.teacher %}
+        setTimeout(function() {
+            $('#teacherName').text('{{ form.instance.teacher.get_full_name }}');
+            $('#teacherInfo').show();
+            updateDebugInfo();
+        }, 1000);
+        {% endif %}
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if assignment %}Edit Assignment{% else %}Add Assignment{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if assignment %}Edit Assignment{% else %}Add Assignment{% endif %}</h1>
+        <a href="{% url 'academics:assignment_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Assignments
+        </a>
+    </div>
+
+    <!-- Assignment Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Assignment Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.title.id_for_label }}">Title *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">
+                                {{ form.title.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.subject.id_for_label }}">Subject *</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger">
+                                {{ form.subject.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.grade.id_for_label }}">Class/Grade *</label>
+                            {{ form.grade }}
+                            {% if form.grade.errors %}
+                            <div class="text-danger">
+                                {{ form.grade.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.section.id_for_label }}">Section (Optional)</label>
+                            {{ form.section }}
+                            {% if form.section.errors %}
+                            <div class="text-danger">
+                                {{ form.section.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Only sections assigned to you are shown. Leave blank to assign to all sections you teach.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.due_date.id_for_label }}">Due Date *</label>
+                            {{ form.due_date }}
+                            {% if form.due_date.errors %}
+                            <div class="text-danger">
+                                {{ form.due_date.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description *</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger">
+                        {{ form.description.errors }}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Provide a clear description of the assignment</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.instructions.id_for_label }}">Instructions (Optional)</label>
+                    {{ form.instructions }}
+                    {% if form.instructions.errors %}
+                    <div class="text-danger">
+                        {{ form.instructions.errors }}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Detailed steps or guidelines for completing the assignment</small>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.attachment.id_for_label }}">Attachment (Optional)</label>
+                            {{ form.attachment }}
+                            {% if form.attachment.errors %}
+                            <div class="text-danger">
+                                {{ form.attachment.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Upload any relevant files for the assignment</small>
+                            {% if assignment and assignment.file %}
+                            <div class="mt-2">
+                                <p>Current file: <a href="{{ assignment.file.url }}" target="_blank">{{ assignment.file.name }}</a></p>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="clear_file" id="clear_file">
+                                    <label class="form-check-label" for="clear_file">
+                                        Remove current file
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.max_score.id_for_label }}">Maximum Score *</label>
+                            {{ form.max_score }}
+                            {% if form.max_score.errors %}
+                            <div class="text-danger">
+                                {{ form.max_score.errors }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">The maximum points a student can earn</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.grading_criteria.id_for_label }}">Grading Criteria (Optional)</label>
+                    {{ form.grading_criteria }}
+                    {% if form.grading_criteria.errors %}
+                    <div class="text-danger">
+                        {{ form.grading_criteria.errors }}
+                    </div>
+                    {% endif %}
+                    <small class="form-text text-muted">Explain how the assignment will be graded</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> {% if assignment %}Update Assignment{% else %}Create Assignment{% endif %}
+                </button>
+                <a href="{% url 'academics:assignment_list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datepicker for due date
+        $('#{{ form.due_date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+        
+        // Initialize select2 for dropdowns
+        $('#{{ form.grade.id_for_label }}, #{{ form.section.id_for_label }}, #{{ form.subject.id_for_label }}').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %} 

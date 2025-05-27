@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Exams - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Exams</h1>
+        {% if user.is_admin %}
+        <a href="{% url 'academics:add_exam' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Exam
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Exams</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mb-2 mr-3">
+                    <label for="grade" class="sr-only">Class</label>
+                    <select name="grade" id="grade" class="form-control">
+                        <option value="">All Classes</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}" {% if grade.id|stringformat:'s' == request.GET.grade %}selected{% endif %}>
+                            {{ grade.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-2 mr-3">
+                    <label for="exam_type" class="sr-only">Exam Type</label>
+                    <select name="exam_type" id="exam_type" class="form-control">
+                        <option value="">All Exam Types</option>
+                        {% for type in exam_types %}
+                        <option value="{{ type.id }}" {% if type.id|stringformat:'s' == request.GET.exam_type %}selected{% endif %}>
+                            {{ type.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-2 mr-3">
+                    <label for="session" class="sr-only">Academic Session</label>
+                    <select name="session" id="session" class="form-control">
+                        <option value="">All Sessions</option>
+                        {% for session in academic_sessions %}
+                        <option value="{{ session.id }}" {% if session.id|stringformat:'s' == request.GET.session %}selected{% endif %}>
+                            {{ session.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-2 mr-3">
+                    <label for="status" class="sr-only">Status</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="upcoming" {% if request.GET.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="ongoing" {% if request.GET.status == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary mb-2 mr-2">Filter</button>
+                <a href="{% url 'academics:exam_list' %}" class="btn btn-secondary mb-2">Reset</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Exams Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="examsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Exam Type</th>
+                            <th>Class</th>
+                            <th>Academic Session</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in exams %}
+                        <tr>
+                            <td>{{ exam.name }}</td>
+                            <td>{{ exam.exam_type.name }}</td>
+                            <td>{{ exam.grade.name }}</td>
+                            <td>{{ exam.academic_session.name }}</td>
+                            <td>{{ exam.start_date|date:"M d, Y" }}</td>
+                            <td>{{ exam.end_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% now "Y-m-d" as today %}
+                                {% if exam.start_date|date:"Y-m-d" > today %}
+                                <span class="badge badge-info">Upcoming</span>
+                                {% elif exam.end_date|date:"Y-m-d" < today %}
+                                <span class="badge badge-secondary">Completed</span>
+                                {% else %}
+                                <span class="badge badge-success">Ongoing</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'academics:exam_detail' exam.id %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if user.is_admin %}
+                                <a href="{% url 'academics:edit_exam' exam.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'academics:delete_exam' exam.id %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No exams found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize select2 for dropdowns
+        $('#grade, #exam_type, #session, #status').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            minimumResultsForSearch: 10
+        });
+        
+        // Initialize DataTable
+        $('#examsTable').DataTable({
+            "paging": true,
+            "searching": true,
+            "order": [[4, "desc"]], // Sort by start date column descending
+            "language": {
+                "emptyTable": "No exams found"
+            }
+        });
+    });
+</script>
+{% endblock %} 

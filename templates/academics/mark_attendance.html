@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ page_title }}</h1>
+        <a href="{% url 'academics:teacher_timetable' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Classes
+        </a>
+    </div>
+
+    <!-- Class Information Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Class Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Class/Grade</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ timetable.grade.display_name }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-school fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Section</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ timetable.section.name }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Subject</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ timetable.subject.name }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-book fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Attendance Date</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ attendance_date|date:"F d, Y" }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <form method="get" class="form-inline">
+                        <div class="form-group mr-2">
+                            <label for="date" class="mr-2">Change Date:</label>
+                            <input type="date" name="date" id="date" class="form-control" value="{{ attendance_date|date:'Y-m-d' }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calendar-alt"></i> Update Date
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Students Attendance</h6>
+            <div>
+                <button type="button" id="markAllPresent" class="btn btn-success btn-sm">
+                    <i class="fas fa-check"></i> Mark All Present
+                </button>
+                <button type="button" id="markAllAbsent" class="btn btn-danger btn-sm">
+                    <i class="fas fa-times"></i> Mark All Absent
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if students %}
+                <form method="post" id="attendanceForm">
+                    {% csrf_token %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Roll No.</th>
+                                    <th>Student Name</th>
+                                    <th style="width: 120px;">Attendance</th>
+                                    <th>Remarks</th>
+                                    <th style="width: 120px;">Attendance %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student_data in students %}
+                                <tr>
+                                    <td>{{ student_data.student.roll_number }}</td>
+                                    <td>{{ student_data.student.user.get_full_name }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-success attendance-btn present-btn {% if student_data.attendance.is_present %}active{% endif %}" data-student="{{ student_data.student.id }}" data-status="present">
+                                                <i class="fas fa-check"></i> Present
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger attendance-btn absent-btn {% if student_data.attendance and not student_data.attendance.is_present %}active{% endif %}" data-student="{{ student_data.student.id }}" data-status="absent">
+                                                <i class="fas fa-times"></i> Absent
+                                            </button>
+                                        </div>
+                                        <input type="hidden" name="attendance_{{ student_data.student.id }}" id="attendance_{{ student_data.student.id }}" value="{% if student_data.attendance %}{% if student_data.attendance.is_present %}present{% else %}absent{% endif %}{% else %}present{% endif %}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="remarks_{{ student_data.student.id }}" class="form-control form-control-sm" value="{% if student_data.attendance %}{{ student_data.attendance.remarks }}{% endif %}" placeholder="Optional remarks">
+                                    </td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{% if student_data.attendance_percentage >= 75 %}success{% elif student_data.attendance_percentage >= 50 %}warning{% else %}danger{% endif %}" role="progressbar" style="width: {{ student_data.attendance_percentage }}%;" aria-valuenow="{{ student_data.attendance_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ student_data.attendance_percentage }}%</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Save Attendance
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No students found in this class.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Handle attendance button clicks
+        $('.attendance-btn').click(function() {
+            var student_id = $(this).data('student');
+            var status = $(this).data('status');
+            
+            // Update hidden input value
+            $('#attendance_' + student_id).val(status);
+            
+            // Update button active states
+            if (status === 'present') {
+                $(this).addClass('active');
+                $('.absent-btn[data-student="' + student_id + '"]').removeClass('active');
+            } else {
+                $(this).addClass('active');
+                $('.present-btn[data-student="' + student_id + '"]').removeClass('active');
+            }
+        });
+        
+        // Mark all present
+        $('#markAllPresent').click(function() {
+            $('.present-btn').addClass('active');
+            $('.absent-btn').removeClass('active');
+            $('.attendance-btn').each(function() {
+                var student_id = $(this).data('student');
+                if ($(this).hasClass('present-btn')) {
+                    $('#attendance_' + student_id).val('present');
+                }
+            });
+        });
+        
+        // Mark all absent
+        $('#markAllAbsent').click(function() {
+            $('.absent-btn').addClass('active');
+            $('.present-btn').removeClass('active');
+            $('.attendance-btn').each(function() {
+                var student_id = $(this).data('student');
+                if ($(this).hasClass('absent-btn')) {
+                    $('#attendance_' + student_id).val('absent');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'finance:fee_structure_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Fee Structures
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Fee Structure Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name">Fee Structure Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ fee_structure.name|default:'' }}" required>
+                            <small class="form-text text-muted">Give this fee structure a descriptive name</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="category">Fee Category <span class="text-danger">*</span></label>
+                            <select class="form-control" id="category" name="category" required>
+                                <option value="">-- Select Category --</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if fee_structure.category.id == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                <a href="{% url 'finance:add_fee_category' %}" target="_blank">
+                                    <i class="fas fa-plus-circle"></i> Add New Category
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="grade">Grade/Class <span class="text-danger">*</span></label>
+                            <select class="form-control" id="grade" name="grade" required>
+                                <option value="">-- Select Grade --</option>
+                                {% for grade in grades %}
+                                <option value="{{ grade.id }}" {% if fee_structure.grade.id == grade.id %}selected{% endif %}>
+                                    {{ grade.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Select the grade/class this fee applies to</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="amount">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Rs.</span>
+                                </div>
+                                <input type="number" class="form-control" id="amount" name="amount" min="0" step="0.01" value="{{ fee_structure.amount|default:'' }}" required>
+                            </div>
+                            <small class="form-text text-muted">Enter the fee amount</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="applicable_from">Applicable From</label>
+                            <input type="date" class="form-control" id="applicable_from" name="applicable_from" value="{{ fee_structure.applicable_from|date:'Y-m-d'|default:'' }}">
+                            <small class="form-text text-muted">When does this fee become applicable?</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group mt-4">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="is_mandatory" name="is_mandatory" {% if fee_structure.is_mandatory %}checked{% endif %}>
+                                <label class="custom-control-label" for="is_mandatory">Is Mandatory</label>
+                            </div>
+                            <small class="form-text text-muted">Is this fee mandatory for all students in this grade?</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{ fee_structure.description|default:'' }}</textarea>
+                    <small class="form-text text-muted">Additional details about this fee structure (optional)</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    {% if fee_structure %}Update{% else %}Create{% endif %} Fee Structure
+                </button>
+                <a href="{% url 'finance:fee_structure_list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize select2 for dropdowns
+        $('#category, #grade').select2({
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %} 

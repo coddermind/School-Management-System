@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Attendance - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Confirm Delete Attendance</h1>
+        <a href="{% url 'academics:attendance_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Back to List
+        </a>
+    </div>
+
+    <!-- Delete Confirmation Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Delete Attendance Record</h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <h5 class="alert-heading">Warning!</h5>
+                <p>Are you sure you want to delete the attendance record for <strong>{{ attendance.student.user.get_full_name }}</strong> in <strong>{{ attendance.subject.name }}</strong> on <strong>{{ attendance.date }}</strong>?</p>
+                <hr>
+                <p class="mb-0">This action cannot be undone. All data associated with this attendance record will be permanently removed from the system.</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash fa-sm"></i> Confirm Delete
+                </button>
+                <a href="{% url 'academics:attendance_detail' attendance.id %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

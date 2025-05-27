@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit Teacher{% else %}Add Teacher{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if form.instance.pk %}Edit Teacher{% else %}Add Teacher{% endif %}</h1>
+        <a href="{% url 'academics:teacher_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Teachers
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Teacher Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.user.id_for_label }}">User Account</label>
+                        {{ form.user }}
+                        {% if form.user.errors %}
+                            <div class="text-danger">{{ form.user.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a user with Teacher role</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.department.id_for_label }}">Department</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <div class="text-danger">{{ form.department.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.joining_date.id_for_label }}">Joining Date</label>
+                        {{ form.joining_date }}
+                        {% if form.joining_date.errors %}
+                            <div class="text-danger">{{ form.joining_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.subjects.id_for_label }}">Subjects</label>
+                        {{ form.subjects }}
+                        {% if form.subjects.errors %}
+                            <div class="text-danger">{{ form.subjects.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Hold Ctrl key to select multiple subjects</small>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="{{ form.qualifications.id_for_label }}">Qualifications</label>
+                        {{ form.qualifications }}
+                        {% if form.qualifications.errors %}
+                            <div class="text-danger">{{ form.qualifications.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> {% if form.instance.pk %}Update{% else %}Save{% endif %}
+                    </button>
+                    <a href="{% url 'academics:teacher_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Add select2 to dropdowns for better user experience
+        $('select').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+        
+        // Initialize datepicker for joining date
+        $('#{{ form.joining_date.id_for_label }}').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>User Management</h1>
+                <a href="{% url 'accounts:add_user' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New User
+                </a>
+            </div>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="user_type" class="form-label">User Type</label>
+                            <select name="user_type" id="user_type" class="form-select">
+                                <option value="">All Types</option>
+                                <option value="ADMIN" {% if user_type == 'ADMIN' %}selected{% endif %}>Admin</option>
+                                <option value="TEACHER" {% if user_type == 'TEACHER' %}selected{% endif %}>Teacher</option>
+                                <option value="STUDENT" {% if user_type == 'STUDENT' %}selected{% endif %}>Student</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Search by name or email" value="{{ search_query }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- User Table -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+                </div>
+                <div class="card-body">
+                    {% if users %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>User Type</th>
+                                    <th>Date Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user_obj in users %}
+                                <tr>
+                                    <td>{{ user_obj.id }}</td>
+                                    <td>{{ user_obj.get_full_name|default:"-" }}</td>
+                                    <td>{{ user_obj.email }}</td>
+                                    <td>
+                                        {% if user_obj.user_type == 'ADMIN' %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% elif user_obj.user_type == 'TEACHER' %}
+                                            <span class="badge bg-primary">Teacher</span>
+                                        {% elif user_obj.user_type == 'STUDENT' %}
+                                            <span class="badge bg-success">Student</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user_obj.date_joined|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'accounts:user_detail' user_obj.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <a href="{% url 'accounts:edit_user' user_obj.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'accounts:delete_user' user_obj.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No users found. <a href="{% url 'accounts:add_user' %}">Add a user</a>.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable();
+    });
+</script>
+{% endblock %} 

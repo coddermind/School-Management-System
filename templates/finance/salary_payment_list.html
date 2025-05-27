@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Salary Payments - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Salary Payments</h1>
+        <a href="{% url 'finance:add_salary_payment' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Record New Salary Payment
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Statistics Cards -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Payments (Filtered)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ filtered_total|default:"0.00" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Payments (This Month)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ monthly_total|default:"0.00" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Payment Count</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ payments.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Current Month</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ current_month }}/{{ current_year }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filter Payments</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'finance:salary_payment_list' %}" class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="search">Search Teacher</label>
+                    <input type="text" name="search" id="search" class="form-control" placeholder="Name or Email" value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="month">Month</label>
+                    <select name="month" id="month" class="form-control">
+                        <option value="">All Months</option>
+                        {% for month_num, month_name in months %}
+                        <option value="{{ month_num }}" {% if request.GET.month == month_num|stringformat:"i" %}selected{% endif %}>
+                            {{ month_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="year">Year</label>
+                    <select name="year" id="year" class="form-control">
+                        <option value="">All Years</option>
+                        {% for year_val in years %}
+                        <option value="{{ year_val }}" {% if request.GET.year == year_val|stringformat:"i" %}selected{% endif %}>
+                            {{ year_val }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="payment_method">Payment Method</label>
+                    <select name="payment_method" id="payment_method" class="form-control">
+                        <option value="">All Methods</option>
+                        {% for value, text in payment_methods %}
+                        <option value="{{ value }}" {% if request.GET.payment_method == value %}selected{% endif %}>
+                            {{ text }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="payment_status">Status</label>
+                    <select name="payment_status" id="payment_status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="paid" {% if request.GET.payment_status == 'paid' %}selected{% endif %}>Paid</option>
+                        <option value="pending" {% if request.GET.payment_status == 'pending' %}selected{% endif %}>Pending</option>
+                    </select>
+                </div>
+                <div class="col-md-1 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+            </form>
+            
+            <!-- Date Range Filter -->
+            <hr>
+            <form method="get" action="{% url 'finance:salary_payment_list' %}" class="row">
+                <!-- Preserve other filters -->
+                {% if request.GET.search %}<input type="hidden" name="search" value="{{ request.GET.search }}">{% endif %}
+                {% if request.GET.month %}<input type="hidden" name="month" value="{{ request.GET.month }}">{% endif %}
+                {% if request.GET.year %}<input type="hidden" name="year" value="{{ request.GET.year }}">{% endif %}
+                {% if request.GET.payment_method %}<input type="hidden" name="payment_method" value="{{ request.GET.payment_method }}">{% endif %}
+                {% if request.GET.payment_status %}<input type="hidden" name="payment_status" value="{{ request.GET.payment_status }}">{% endif %}
+                
+                <div class="col-md-5 mb-3">
+                    <label for="from_date">From Date</label>
+                    <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request.GET.from_date|default:'' }}">
+                </div>
+                <div class="col-md-5 mb-3">
+                    <label for="to_date">To Date</label>
+                    <input type="date" name="to_date" id="to_date" class="form-control" value="{{ request.GET.to_date|default:'' }}">
+                </div>
+                <div class="col-md-2 mb-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Apply Date Range</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mb-4">
+        <a href="{% url 'finance:salary_structure_list' %}" class="btn btn-info">
+            <i class="fas fa-cog"></i> Manage Salary Structures
+        </a>
+        <a href="{% url 'finance:add_salary_payment' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Record New Payment
+        </a>
+        <a href="#" class="btn btn-secondary">
+            <i class="fas fa-file-csv"></i> Export to CSV
+        </a>
+    </div>
+
+    <!-- Payment List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Salary Payment Records</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="paymentsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Teacher</th>
+                            <th>Month/Year</th>
+                            <th>Payment Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if payments %}
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if payment.teacher.profile_pic %}
+                                        <img src="{{ payment.teacher.profile_pic.url }}" alt="Profile" class="rounded-circle mr-2" style="width: 40px; height: 40px;">
+                                        {% else %}
+                                        <div class="rounded-circle bg-primary text-white mr-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            {{ payment.teacher.first_name|first }}{{ payment.teacher.last_name|first }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            {{ payment.teacher.get_full_name }}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ payment.get_month_display }} {{ payment.year }}</td>
+                                <td>{{ payment.payment_date }}</td>
+                                <td>{{ payment.salary_structure.net_salary }}</td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                                <td>
+                                    {% if payment.is_paid %}
+                                    <span class="badge bg-success text-white">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-white">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'finance:edit_salary_payment' payment.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-danger delete-payment" data-id="{{ payment.id }}" data-toggle="modal" data-target="#deleteModal">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center">No salary payments found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                
+                <!-- Pagination -->
+                {% if payments.has_other_pages %}
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if payments.has_previous %}
+                            <a href="?{{ request.GET.urlencode }}&page=1">&laquo; first</a>
+                            <a href="?{{ request.GET.urlencode }}&page={{ payments.previous_page_number }}">previous</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Page {{ payments.number }} of {{ payments.paginator.num_pages }}.
+                        </span>
+
+                        {% if payments.has_next %}
+                            <a href="?{{ request.GET.urlencode }}&page={{ payments.next_page_number }}">next</a>
+                            <a href="?{{ request.GET.urlencode }}&page={{ payments.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this salary payment record? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize datatable
+        $('#paymentsTable').DataTable({
+            "paging": false,  // Disable DataTables paging as we use Django's pagination
+            "ordering": true,
+            "info": false,
+            "searching": false  // Disable DataTables search as we have our own search form
+        });
+        
+        // Set up delete confirmation modal
+        $('.delete-payment').click(function() {
+            var paymentId = $(this).data('id');
+            $('#deleteForm').attr('action', '{% url "finance:delete_salary_payment" 0 %}'.replace('0', paymentId));
+        });
+    });
+</script>
+{% endblock %} 

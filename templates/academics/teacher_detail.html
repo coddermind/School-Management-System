@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Details - {{ teacher.get_full_name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Teacher Details</h1>
+        <div>
+            <a href="{% url 'academics:edit_teacher' teacher.id %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Edit Teacher
+            </a>
+            <a href="{% url 'academics:teacher_list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm ml-2">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Teachers
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Teacher Profile Card -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if teacher.profile_pic %}
+                            <img class="img-profile rounded-circle mb-3" src="{{ teacher.profile_pic.url }}" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <img class="img-profile rounded-circle mb-3" src="/static/img/undraw_profile.svg" style="width: 150px; height: 150px; object-fit: cover;">
+                        {% endif %}
+                        <h4>{{ teacher.get_full_name }}</h4>
+                        <p class="text-muted">Teacher</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Email:</div>
+                        <div class="col-7">{{ teacher.email }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Phone:</div>
+                        <div class="col-7">{{ teacher.phone_number|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Joining Date:</div>
+                        <div class="col-7">{{ joining_date|date:"F j, Y"|default:"Not provided" }}</div>
+                    </div>
+                    
+                    {% if teacher.teacher_profile %}
+                    <hr>
+                    <h6 class="font-weight-bold">Additional Information</h6>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Qualifications:</div>
+                        <div class="col-7">{{ teacher.teacher_profile.qualification|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Experience:</div>
+                        <div class="col-7">{{ teacher.teacher_profile.experience|default:"Not provided" }} years</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Employee ID:</div>
+                        <div class="col-7">{{ teacher.teacher_profile.employee_id|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Date of Birth:</div>
+                        <div class="col-7">{{ teacher.date_of_birth|date:"F j, Y"|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 font-weight-bold">Address:</div>
+                        <div class="col-7">{{ teacher.address|default:"Not provided" }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Salary Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Salary Information</h6>
+                </div>
+                <div class="card-body">
+                    {% if salary_structure %}
+                        <div class="row mb-2">
+                            <div class="col-6 font-weight-bold">Basic Salary:</div>
+                            <div class="col-6">{{ salary_structure.basic_salary }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6 font-weight-bold">Allowances:</div>
+                            <div class="col-6">{{ salary_structure.allowances }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6 font-weight-bold">Deductions:</div>
+                            <div class="col-6">{{ salary_structure.deductions }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6 font-weight-bold">Net Salary:</div>
+                            <div class="col-6 font-weight-bold text-success">{{ net_salary }}</div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'finance:teacher_salary_payments' teacher.id %}" class="btn btn-sm btn-primary btn-block">
+                                <i class="fas fa-money-bill-wave"></i> View Salary History
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            No salary information available
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classes and Subjects -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Classes & Subjects</h6>
+                </div>
+                <div class="card-body">
+                    {% if subjects %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Class/Grade</th>
+                                        <th>Schedule</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in subjects %}
+                                        <tr>
+                                            <td>{{ subject.name }}</td>
+                                            <td>{{ subject.grade_display }}</td>
+                                            <td>
+                                                {% if subject.schedule %}
+                                                    {{ subject.schedule }}
+                                                {% else %}
+                                                    <span class="text-muted">Not scheduled</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-book"></i> View Course
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No subjects assigned to this teacher
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Performance Metrics -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Performance Metrics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Classes Per Week</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ classes_per_week|default:"0" }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Students Taught</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ students_count|default:"0" }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Assignments Given</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ assignments_count|default:"0" }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Attendance Rate</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ attendance_rate|default:"0" }}%</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

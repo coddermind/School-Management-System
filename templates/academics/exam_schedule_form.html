@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if schedule %}Edit Exam Schedule{% else %}Add Exam Schedule{% endif %} - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if schedule %}Edit Exam Schedule{% else %}Add Exam Schedule{% endif %}</h1>
+        <a href="{% url 'academics:exam_detail' exam.id %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Back to Exam Details
+        </a>
+    </div>
+
+    <!-- Exam Schedule Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if schedule %}Edit Schedule for {% else %}Add Schedule to {% endif %}{{ exam.name }}
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <!-- Subject -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_subject">Subject *</label>
+                        <select class="form-control select2 {% if form.subject.errors %}is-invalid{% endif %}" 
+                                id="id_subject" name="subject" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" 
+                                        {% if form.subject.value|stringformat:"s" == subject.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.subject.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.subject.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_date">Date *</label>
+                        <input type="date" class="form-control {% if form.date.errors %}is-invalid{% endif %}" 
+                               id="id_date" name="date" value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required>
+                        {% if form.date.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Date must be within the exam period ({{ exam.start_date|date:"M d, Y" }} - {{ exam.end_date|date:"M d, Y" }}).</small>
+                    </div>
+                    
+                    <!-- Start Time -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_start_time">Start Time *</label>
+                        <input type="time" class="form-control {% if form.start_time.errors %}is-invalid{% endif %}" 
+                               id="id_start_time" name="start_time" value="{{ form.start_time.value|default:'' }}" required>
+                        {% if form.start_time.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.start_time.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- End Time -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_end_time">End Time *</label>
+                        <input type="time" class="form-control {% if form.end_time.errors %}is-invalid{% endif %}" 
+                               id="id_end_time" name="end_time" value="{{ form.end_time.value|default:'' }}" required>
+                        {% if form.end_time.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.end_time.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Classroom -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_classroom">Classroom/Room *</label>
+                        <select class="form-control select2 {% if form.classroom.errors %}is-invalid{% endif %}" 
+                                id="id_classroom" name="classroom" required>
+                            <option value="">Select Classroom</option>
+                            {% for classroom in classrooms %}
+                                <option value="{{ classroom.id }}" 
+                                        {% if form.classroom.value|stringformat:"s" == classroom.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ classroom.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.classroom.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.classroom.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Max Marks -->
+                    <div class="col-md-6 mb-3">
+                        <label for="id_max_marks">Maximum Marks *</label>
+                        <input type="number" min="0" step="1" class="form-control {% if form.max_marks.errors %}is-invalid{% endif %}" 
+                               id="id_max_marks" name="max_marks" value="{{ form.max_marks.value|default:'100' }}" required>
+                        {% if form.max_marks.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.max_marks.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="col-md-12 mb-3">
+                        <label for="id_notes">Notes</label>
+                        <textarea class="form-control {% if form.notes.errors %}is-invalid{% endif %}" 
+                                  id="id_notes" name="notes" rows="3">{{ form.notes.value|default:'' }}</textarea>
+                        {% if form.notes.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.notes.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Any additional information or special instructions for this exam schedule.</small>
+                    </div>
+                </div>
+                
+                <!-- Hidden field for exam ID -->
+                <input type="hidden" name="exam" value="{{ exam.id }}">
+                
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        {% if schedule %}Update Schedule{% else %}Add Schedule{% endif %}
+                    </button>
+                    <a href="{% url 'academics:exam_detail' exam.id %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+        
+        // Time validation
+        $('#id_end_time').change(function() {
+            var startTime = $('#id_start_time').val();
+            var endTime = $(this).val();
+            
+            if (startTime && endTime && startTime >= endTime) {
+                alert('End time must be after start time');
+                $(this).val('');
+            }
+        });
+        
+        // Date validation
+        $('#id_date').change(function() {
+            var selectedDate = new Date($(this).val());
+            var startDate = new Date('{{ exam.start_date|date:"Y-m-d" }}');
+            var endDate = new Date('{{ exam.end_date|date:"Y-m-d" }}');
+            
+            if (selectedDate < startDate || selectedDate > endDate) {
+                alert('Date must be within the exam period ({{ exam.start_date|date:"M d, Y" }} - {{ exam.end_date|date:"M d, Y" }})');
+                $(this).val('');
+            }
+        });
+    });
+</script>
+{% endblock %} 

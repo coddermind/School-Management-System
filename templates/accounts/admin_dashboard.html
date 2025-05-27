@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - School Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">Admin Dashboard</h1>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ user.get_full_name|default:user.email }}!</h5>
+                    <p class="card-text">This is your administration dashboard. From here, you can manage the entire school system.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-blue">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_students }}</h3>
+                        <p class="mb-0">Total Students</p>
+                    </div>
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-green">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_teachers }}</h3>
+                        <p class="mb-0">Total Teachers</p>
+                    </div>
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-orange">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_classes }}</h3>
+                        <p class="mb-0">Total Classes</p>
+                    </div>
+                    <i class="fas fa-school"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat stat-red">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3>{{ total_subjects }}</h3>
+                        <p class="mb-0">Total Subjects</p>
+                    </div>
+                    <i class="fas fa-book"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Announcements</span>
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_announcements %}
+                        <ul class="list-group list-group-flush">
+                            {% for announcement in recent_announcements %}
+                                <li class="list-group-item">
+                                    <h6 class="mb-1">{{ announcement.title }}</h6>
+                                    <p class="mb-1">{{ announcement.content|truncatechars:100 }}</p>
+                                    <small class="text-muted">{{ announcement.created_at|date:"M d, Y" }}</small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">No announcements yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Fee Payments</span>
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_fee_payments %}
+                        <ul class="list-group list-group-flush">
+                            {% for payment in recent_fee_payments %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">{{ payment.student.user.get_full_name }}</h6>
+                                            <p class="mb-1">{{ payment.fee_type.name }}</p>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">{{ payment.amount }}</span>
+                                            <small class="text-muted d-block">{{ payment.payment_date|date:"M d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">No fee payments recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Upcoming Events</span>
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <ul class="list-group list-group-flush">
+                            {% for event in upcoming_events %}
+                                <li class="list-group-item">
+                                    <h6 class="mb-1">{{ event.title }}</h6>
+                                    <p class="mb-1">{{ event.description|truncatechars:100 }}</p>
+                                    <small class="text-muted">
+                                        {{ event.start_date|date:"M d, Y" }}
+                                        {% if event.start_date != event.end_date %}
+                                            - {{ event.end_date|date:"M d, Y" }}
+                                        {% endif %}
+                                    </small>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">No upcoming events.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span>Recent Salary Payments</span>
+                    <a href="#" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_salary_payments %}
+                        <ul class="list-group list-group-flush">
+                            {% for payment in recent_salary_payments %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1">{{ payment.teacher.user.get_full_name }}</h6>
+                                            <p class="mb-1">{{ payment.month_year|date:"F Y" }}</p>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-primary">{{ payment.amount }}</span>
+                                            <small class="text-muted d-block">{{ payment.payment_date|date:"M d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center">No salary payments recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
